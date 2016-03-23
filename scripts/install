@@ -70,6 +70,10 @@ sudo yunohost app ssowatconf
 #temporary add domain name to /etc/hosts
 sudo sed -i "1 i\127.0.0.1 $domain #bozon_hosts" /etc/hosts
 
+# Configure config file
+sudo sed -i "s@'uploads/'@'/home/yunohost.app/$app/uploads/'@g" $final_path/config.php
+sudo sed -i "s@'private/'@'/home/yunohost.app/$app/private/'@g" $final_path/config.php
+
 #make request to install app
 #get the html page 
 curl_path=$([ "$path" == "/" ] || echo $path)
@@ -80,12 +84,9 @@ curl_path=$([ "$path" == "/" ] || echo $path)
 #token=$(cat install_page.html | grep "input" | grep "token" | tail -1 | cut -d' ' -f3 | cut -d'"' -f2)
 #send http POST values
 #curl -k -X POST \
-  --data-urlencode "default_lang=$default_lang" \
-  --data-urlencode "install=Installer" \
-  --data-urlencode "name=$admin" \
   --data-urlencode "login=$admin" \
-  --data-urlencode "pwd=$password" \
-  --data-urlencode "pwd2=$password" \
+  --data-urlencode "pass=$password" \
+  --data-urlencode "confirm=$password" \
   --data-urlencode "token=$token" \
   https://$domain$curl_path/index.php?p=admin > /dev/null 2>&1
 
