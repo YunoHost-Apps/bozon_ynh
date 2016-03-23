@@ -1,0 +1,139 @@
+/* Admin */
+#admin {
+  width: calc(100% - 8px);
+  margin: 0 auto;
+  color: #333;
+}
+
+/* menu */
+#admin #menu{display:block;}
+#admin #menu a.active{box-shadow:inset 0 0 10px #basic_color_superdark!important;}
+#admin #menu a {
+  display: block;
+  padding: 5px;
+  width: 22px;
+  height: 22px;
+  float: left;
+  margin-bottom: 10px;
+  border-top: 1px solid #888;
+  border-bottom: 1px solid #888;
+}
+#admin #menu a:hover {background-color: #hover_color_dark!important}
+
+#admin #menu a:first-of-type {
+  border-left: 1px solid #888;
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+}
+
+#admin #menu a:last-of-type {
+  border-right: 1px solid #888;
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+
+#admin #menu #delete_selection
+{background:#e20;}
+#admin #menu #delete_selection.show
+{opacity:100;max-width:200px;transition:all 300ms;margin-left:2px;}
+#admin #menu #delete_selection:hover
+{background-color:#f30!important;transition:all 300ms;}
+#admin #menu #delete_selection,#admin #menu #zip_selection
+{
+  font-size:18px;
+  color:rgba(255,255,255,0.7);
+  text-align:center;
+  line-height:30px;
+  cursor:pointer;transition:all 300ms;
+  opacity:0;max-width:0;
+  overflow:hidden;
+  display: inline-block;
+  padding: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 3px;
+  margin-left:0;
+}
+#admin #menu #zip_selection.show
+{opacity:100;max-width:200px;transition:all 300ms;margin-left:2px;}
+#admin #menu #zip_selection:hover
+{background-color:#03F!important;transition:all 300ms;}
+#admin #menu #zip_selection{background: #02e;}
+  
+#admin #menu a:hover{color:white;}
+#admin #menu a{
+  text-align:center;
+  vertical-align:middle;
+  color:rgba(255,255,255,0.8);
+  font-size:18px;
+  background: #basic_color_neutral 
+}
+          
+
+/* fil ariane */
+#admin #fil_ariane{
+  clear: both;
+  width: 100%;
+  height: 32px;
+  line-height: 32px;
+  vertical-align: middle;
+  border-bottom: 1px solid #888;
+  font-size: 1.2em;
+  margin-bottom:10px;
+}
+
+#admin #fil_ariane .ariane_home {
+  display: inline-block;
+  width: 25px;
+  height: inherit;
+  font-size:20px;
+  line-height:15px;
+}
+#admin #fil_ariane .back {
+  display: inline-block;
+  width: 32px;
+  height: inherit;	
+  font-size:20px;
+  line-height:15px;
+}
+#admin #fil_ariane a:hover{color:#hover_color_neutral;}
+#admin #fil_ariane a.ariane_item{margin-left:5px;}
+#admin #fil_ariane a.ariane_item:after{
+  content:"/";
+  margin-left:5px;
+  margin-right:5px;
+  height:38px;
+  display:inline-block;
+  line-height: 30px;
+  color:rgba(0,0,0,0.5);
+  
+  text-decoration: none;
+  font-size:1em;
+}
+
+#folder_size{
+  color:rgba(0,0,0,0.5);
+}
+
+/* filtre */
+#admin #filter {
+  margin: 15px 0;
+  font-size: 0.9em;
+}
+
+
+#ID_folder{text-align:center;color:rgba(0,0,0,0.8);font-size:1.2em;}
+
+#toplink a{color:rgba(0,0,0,0.5)}
+#toplink{
+  font-size:2em;
+  padding:5px;
+  background-color:rgba(0,0,0,0.2);
+  border-radius:3px;
+  width:48px;height: 48px;
+  text-align:center;
+  position:fixed;
+  bottom:5px;right:5px;
+}
+
+.info{text-align: center;padding:10px;border-radius: 3px;background-color: rgba(100,100,100,0.5);margin:5px;color:white;text-shadow:0 1px 1px rgba(0,0,0,0.2);}

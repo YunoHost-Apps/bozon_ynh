@@ -1,0 +1,322 @@
+/* List */
+/*
+Aucun fichier:
+.icon et .list ayant un min-height à 200px, on fixe ici la hauteur pour center le message verticalement
+*/
+#nofile {
+  height: 200px;
+  line-height: 200px;
+  text-align: center;
+  vertical-align: middle;
+}
+.free_space_text{padding:10px;}
+#admin #more_button{
+  display:block;
+  max-width:200px;
+  margin:20px auto;
+  text-align:center;
+transition: all 400ms;
+}
+#admin .loading{background-color:#0F3; color:#050;transition: all 400ms;}
+#async_loading{transition: all 400ms;}
+#nb_items{display:inline-block;}
+/* 
+ * Vue en listes
+ */
+
+/* afficher les actions au survol d'un fichier ou dossier de la liste */
+#admin .list table {
+  width:100%; border-collapse: collapse
+}
+  #admin .list table thead th{
+    padding-top:10px;
+    font-size: 1.3em;text-align: left;
+  }
+  #admin .list table thead th.sorttable_sorted{
+    font-weight:bold;
+  }
+  #admin .list td.table_check {
+   width:10px;vertical-align: middle
+  }
+  #admin .list td.table_image {
+   width:20px;
+   text-align: center;
+  }
+  #admin .list td.table_filename {
+    
+  }
+  #admin .list td.table_filesize {
+    
+  }
+  #admin .list td.table_buttons {
+   background-color:#basic_color_light;
+  }
+  #admin .list td.table_buttons:empty {
+    background-color:transparent;
+  }
+  #admin .list td{padding: 3px;} 
+  #admin .list td a.back,#admin .list td a.root{display:block;font-size:1.4em;width:100%;font-weight: bolder} 
+
+
+/* les listes */
+#admin .list tr, #admin #Users_list li{  
+  min-height: 26px;  
+  overflow: hidden;
+  font-size: 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  word-spacing: word-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  z-index: 1;
+  border-top:1px solid rgba(0,0,0,0.1);
+}
+#admin #Users_list li label{display:inline-block;width:90%;cursor:pointer;}
+#admin #Users_list li:hover{background:transparent}
+#admin #Users_list li{
+  cursor:default;
+  text-align:left;
+  height:26px;
+  display:block;
+  width:auto;
+  padding:0;
+}
+
+#admin .list tr a:hover{color:#hover_color_dark;}
+#admin .list tr a {
+  max-height: 30px;
+  width: 100%;
+  font-style: normal;
+  display: inline-block;
+  word-wrap: break-word;
+  word-break: break-all;
+  text-decoration: none;
+}
+
+#admin .list tr a img {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  margin: auto;
+  border-radius: 2px;
+  vertical-align: middle;
+}
+
+/*
+ * Vue en listes et en icones
+ */
+
+#admin .icon #folder_size{text-align:center;margin-top:20px;}
+
+#admin .list,
+#admin .icon {
+  padding: 0;
+  min-height: 200px;
+  text-align: left;
+}
+
+#admin .list .folder,
+#admin .icon .folder {
+  background: rgba(0,50,100,0.1);
+}
+#admin .list .folder .table_image{
+  font-size:18px;
+
+}
+
+#admin .list .folder .over,
+#admin .icon .folder .over {
+  color: rgba(0,0,0,0.5);
+  text-align: center;
+}
+
+#admin .list tr:hover{background-color:#hover_color_light;}
+#admin .icon li:hover {
+  background-color:#hover_color_neutral;
+}
+
+#admin .list tr.burn .table_buttons{background-color: rgba(200,10,0,0.5)}
+#admin .list tr.burn,
+#admin .icon li.burn {
+  background-color: rgba(255,10,0,0.5) ;  
+}
+
+#admin .list tr.burn:hover,
+#admin .icon li.burn:hover {
+  background-color: rgba(255,10,0,0.2) !important;
+  box-shadow: 0 0 2px rgba(255,10,0,0.5);
+}
+
+#admin .list tr.locked .table_buttons{background-color: rgba(0,126,200,0.5)}
+#admin .list tr.locked,
+#admin .icon li.locked {
+  background-color: rgba(0,126,255,0.5);
+}
+
+#admin .list tr.locked:hover,
+#admin .icon li.locked:hover {
+  background-color: rgba(0,126,255,0.2) !important;
+  box-shadow: 0 0 2px rgba(0,100,255,0.5);
+}
+
+
+.links .list tr:hover{background-color: #hover_color_light;}
+.links .icon li:hover {
+  background-color:  #hover_color_neutral !important;
+}
+
+.shared_folder a{color:rgba(0,0,0,0.5)!important;}
+.shared_folder a:hover{color:rgba(0,0,0,0.8)!important;}
+.shared_folder .owner{color:rgba(0,50,100,0.5)!important;}
+.shared_folder,.shared_folder .table_buttons{
+  background: rgba(0,50,100,0.2)!important;
+
+}
+
+
+
+#admin .list tr .table_buttons a:hover,#admin .icon li .buttons a:hover{color:rgba(255,255,255,1);}
+#admin .list tr .table_buttons a{
+  display:inline-block;
+  line-height: 100%;
+  width: 20px;
+  height: 20px;     
+  border-radius: 3px;
+  font-size: 18px;
+  color:rgba(255,255,255,0.6);
+  }
+#admin .icon li .buttons a {
+  display: none;
+  line-height: 100%;
+  width: 18px;
+  height: 18px;			
+  border-radius: 3px;
+  font-size: 14px;
+  margin: 1px;
+  color:rgba(255,255,255,0.6);
+}
+
+#admin .icon li:hover .buttons {
+  background-color:  #hover_color_dark;
+  padding:3px;
+  border-radius: 3px;
+}
+
+#admin .list tr:hover .buttons *,
+#admin .icon li:hover .buttons * {
+  display: inline-block;
+}
+#admin .blue{color:rgba(0,100,255,0.7);}
+#admin .blue:hover{color:rgba(0,100,255,1);}
+
+
+#admin .icon .folder span{display:block;font-size:64px;}
+#admin .icon .folder span.owner{font-size:1em;}
+
+#admin .icon .folder .buttons span{font-size:14px;}
+#admin .table_image{font-size:18px;}
+#admin .ext{overflow:hidden;}
+#admin .table_image .ext em{
+  font-size:7px;
+  color:white;
+  position:absolute;
+  margin-left: -16px;
+  margin-top: 10px;
+  width: 17px;
+  overflow: hidden;
+  height: 10px;
+}
+#admin .icon .ext em{
+  font-size:18px;
+  color:white;
+  position:absolute;
+  margin-left: 42px;
+  margin-top: -30px;
+  width: 45px;
+  overflow: hidden;
+  height: 23px;
+  text-align: left;
+}
+td.burn                           {background-image: url('../img/list/burn.png') !important;
+                                     background-position: center center !important;
+                                     background-repeat: no-repeat !important;
+                                    }
+td.locked,li.locked               {background-image: url('../img/list/locked.png') !important;
+                                     background-position: center center !important;
+                                     background-repeat: no-repeat !important;
+                                    }
+            
+/* extensions */
+
+.zip:before,.rar:before,.gz:before,.tgz:before    {color:rgba(255,180,0,0.9)!important;}
+.zip em,.rar em,.gz em,.tgz em {color:rgba(0,0,0,0.5)!important;}
+
+.txt:before,.ini:before,.nfo:before, .css:before, .md:before {color:rgba(100,100,100,0.9)!important;}
+
+.doc:before,.odt:before,.odg:before,.xdoc:before {color:rgba(0,0,255,0.8)!important;}
+.pdf:before{color:rgba(200,0,0,0.8)!important;}
+.xls:before{color:rgba(130,130,130,0.8)!important;}
+.css:before{color:rgba(0,200,0,0.7)!important;}
+.js:before {color:rgba(0,100,250,0.5)!important;}
+.swf:before{color:rgba(100,0,100,0.5)!important;}
+.mp3:before{color:rgba(0,100,200,0.9)!important;}
+.ogg:before{color:rgba(0,150,200,0.9)!important;}
+.mp4:before,.flv:before, .avi:before, .mkv:before {color:rgba(150,0,20,0.9)!important;}
+.php:before, .sphp:before {color:rgba(150,0,150,0.9)!important;}
+.html:before,.htm:before,.shtml:before,.shtm:before {color:rgba(0,200,100,0.9)!important;}
+.exe:before,.bat:before,.iso:before,.bin:before{color:rgba(50,50,100,0.6)!important;}
+
+/* 
+ * Vue en icones
+ */
+
+#admin .icon li {
+  width: 132px;
+  height: 132px;
+  overflow: hidden;
+  display: inline-block;
+  list-style: none;
+  font-size: 12px;
+  border-radius: 3px;
+  padding: 10px;
+  margin: 10px;
+  cursor: pointer;
+  word-spacing: word-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  z-index: 1;
+  text-align: center;
+  vertical-align: bottom;
+  
+}
+
+#admin .icon li .buttons {
+  position: absolute;
+}
+
+#admin .icon li a {
+  display: block;
+  text-decoration: none;
+}
+
+#admin .icon li>em {
+  font-style: italic;
+  display: block;
+  margin-bottom: 5px;
+  margin-top: 5px;
+}
+
+#admin .icon li a em {
+  max-height: 30px;
+  font-style: normal;
+  margin-bottom: 3px;
+  display: block;
+}
+
+#admin .icon li a img {
+  width: 64px;
+  height: 64px;
+  display: block;
+  margin: auto;
+  border-radius: 2px;
+}

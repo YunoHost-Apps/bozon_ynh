@@ -1,0 +1,11 @@
+#! /bin/bash
+
+app=bozon
+app_path=/var/www/$app
+data_path=/home/yunohost.app/$app
+save_path=$1
+
+sudo mv $save_path $app_path
+sudo mv $app_path/data $data_path
+sudo rm -rf $app_path/data
+sudo chown -R www-data: $data_path

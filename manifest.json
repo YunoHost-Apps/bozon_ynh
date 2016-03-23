@@ -1,0 +1,80 @@
+{
+    "name": "BoZoN",
+    "id": "bozon",
+    "description": {
+        "en": "Minimalist Drag & drop file sharing app",
+        "fr": "Application minimaliste de partage de fichiers"
+    },
+    "url": "http://bozon.pw",
+    "license": "free",
+    "developer": {
+        "name": "ewilly",
+        "email": "ewilly@neuf.fr"
+    },
+    "multi_instance": "false",
+    "services": [
+        "nginx",
+        "php5-fpm"
+    ],
+    "arguments": {
+        "install" : [
+            {
+                "name": "domain",
+                "type": "domain",
+                "ask": {
+                    "en": "Choose a domain for BoZoN",
+                    "fr": "Choisissez un domaine pour BoZoN"
+                },
+                "example": "domain.org"
+            },
+            {
+                "name": "path",
+                "type": "path",
+                "ask": {
+                    "en": "Choose a path for BoZoN",
+                    "fr": "Choisissez un chemin pour BoZoN"
+                },
+                "example": "/bozon",
+                "default": "/bozon"
+            },
+            {
+                "name": "admin",
+                "type": "user",
+                "ask": {
+                    "en": "Choose an admin user for BoZoN",
+                    "fr": "Choisissez un administrateur pour BoZoN"
+                },
+                "example": "homer"
+            },
+            {
+                "name": "password",
+                "type": "password",
+                "ask": {
+                    "en": "Choose an admin password for BoZoN",
+                    "fr": "Choisissez un mot de passe administrateur pour BoZoN"
+                },
+                "example": "super_secret_password"
+            },
+            {
+                "name": "public_site",
+                "ask": {
+                    "en": "Should this application be public ?",
+                    "fr": "Est-ce que cette application doit être visible publiquement ?"
+                },
+                "choices": ["Yes", "No"],
+                "default": "Yes"
+            },
+            {
+                "name": "default_lang",
+                "ask": {
+                    "en": "Default language",
+                    "fr": "Langue par défaut"
+                },
+                "choices": ["de","en","es","fr","it","nl","pl","pt","po","ro","ru"],
+                "default": "en"
+            }
+
+
+        ]
+    }
+}

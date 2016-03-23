@@ -1,0 +1,8 @@
+#! /bin/bash
+
+app=bozon
+domain=$(sudo yunohost app setting $app domain)
+
+sudo rm -rf /var/www/$app
+sudo rm -rf /home/yunohost.app/$app
+sudo rm -f /etc/nginx/conf.d/$domain.d/$app.conf

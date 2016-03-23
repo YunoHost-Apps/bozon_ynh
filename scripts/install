@@ -1,0 +1,109 @@
+#! /bin/bash
+
+app=bozon
+
+#retrieve arguments
+domain=$1
+path=$2
+admin=$3
+password=$4
+is_public=$5
+default_lang=$6
+
+# Remove trailing slash
+[ "$path" != "/" ] && path=${path%/}
+
+# Check domain/path availability
+sudo yunohost app checkurl $domain$path -a $app
+if [[ ! $? -eq 0 ]]; then
+  exit 1
+fi
+
+# Check user
+sudo yunohost user list --json | grep -q "\"username\": \"$admin\""
+if [[ ! $? -eq 0 ]]; then
+  echo "Wrong user"
+  exit 1
+fi
+
+# Save app settings
+sudo yunohost app setting $app admin -v "$admin"
+sudo yunohost app setting $app is_public -v "$is_public"
+sudo yunohost app setting $app domain -v "$domain"
+sudo yunohost app setting $app path -v "$path"
+
+#create path for copying
+final_path=/var/www/$app
+sudo mkdir -p $final_path
+data_path=/home/yunohost.app/$app
+sudo mkdir -p $data_path
+
+#copy files to final folder and set permissions
+sudo cp -R ../sources/* $final_path/
+sudo find $final_path -type f -name ".htaccess" | xargs sudo rm
+
+#setup permissions
+sudo chown -R root: $final_path
+sudo find $final_path -type f | xargs sudo chmod 644
+sudo find $final_path -type d | xargs sudo chmod 755
+sudo chown -R www-data: $data_path
+sudo find $data_path -type f | xargs sudo chmod 644
+sudo find $data_path -type d | xargs sudo chmod 755
+
+#configure nginx settings
+folder_path=${path%/}
+sudo sed -i "s@YNH_EXAMPLE_PATH@$path@g" ../conf/nginx.conf
+# If path is only / (without subfolder), add trailing slash to alias
+alias_path=$final_path
+[ "$path" == '/' ] && alias_path=$alias_path'/'
+sudo sed -i "s@YNH_EXAMPLE_ALIAS@$alias_path@g" ../conf/nginx.conf
+sudo sed -i "s@YNH_EXAMPLE_FOLDER@$folder_path@g" ../conf/nginx.conf
+sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
+
+#temporary set public accessible
+sudo yunohost app setting $app unprotected_uris -v "/"
+
+# Restart services
+sudo service nginx reload
+sudo yunohost app ssowatconf
+
+#temporary add domain name to /etc/hosts
+sudo sed -i "1 i\127.0.0.1 $domain #bozon_hosts" /etc/hosts
+
+#make request to install app
+#get the html page 
+curl_path=$([ "$path" == "/" ] || echo $path)
+#curl -kL -o install_page.html https://$domain$curl_path/index.php?p=admin >/dev/null 2>&1
+
+
+#get the token for form validation
+#token=$(cat install_page.html | grep "input" | grep "token" | tail -1 | cut -d' ' -f3 | cut -d'"' -f2)
+#send http POST values
+#curl -k -X POST \
+  --data-urlencode "default_lang=$default_lang" \
+  --data-urlencode "install=Installer" \
+  --data-urlencode "name=$admin" \
+  --data-urlencode "login=$admin" \
+  --data-urlencode "pwd=$password" \
+  --data-urlencode "pwd2=$password" \
+  --data-urlencode "token=$token" \
+  https://$domain$curl_path/index.php?p=admin > /dev/null 2>&1
+
+#remove domain name from /etc/hosts
+sudo sed -i "/#bozon_hosts/d" /etc/hosts
+
+# If app is private, remove url to SSOWat conf from skipped_uris
+if [ "$is_public" = "No" ];
+then
+  sudo yunohost app setting $app unprotected_uris -d
+fi
+
+#adding admin to the allowed users
+sudo yunohost app addaccess $app -u $admin
+
+#allow only allowed users to access admin panel
+#sudo yunohost app setting bozon protected_uris -v "/core/admin/"
+
+# Restart services
+sudo service nginx reload
+sudo yunohost app ssowatconf
