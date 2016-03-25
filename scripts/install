@@ -44,7 +44,7 @@ sudo find $final_path -type f | xargs sudo chmod 644
 sudo find $final_path -type d | xargs sudo chmod 755
 
 # Configure config file
-sudo sed -i "s@'en'@$default_lang'@g" $final_path/config.php
+sudo sed -i "s@'en'@'$default_lang'@g" $final_path/config.php
 
 # Configure nginx settings
 folder_path=${path%/}
@@ -79,6 +79,7 @@ curl -k -X POST \
   --data-urlencode "login=$admin" \
   --data-urlencode "pass=$password" \
   --data-urlencode "confirm=$password" \
+  --data-urlencode "submit=Ok" \
   https://$domain$curl_path/index.php?p=login > /dev/null 2>&1
 
 #remove domain name from /etc/hosts
