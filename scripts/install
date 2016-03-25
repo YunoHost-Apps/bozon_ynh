@@ -6,9 +6,8 @@ app=bozon
 domain=$1
 path=$2
 admin=$3
-password=$4
-is_public=$5
-default_lang=$6
+is_public=$4
+default_lang=$5
 
 # Remove trailing slash
 [ "$path" != "/" ] && path=${path%/}
@@ -63,35 +62,6 @@ alias_path=$final_path
 sudo sed -i "s@YNH_EXAMPLE_ALIAS@$alias_path@g" ../conf/nginx.conf
 sudo sed -i "s@YNH_EXAMPLE_FOLDER@$folder_path@g" ../conf/nginx.conf
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
-
-# Temporary set public accessible
-sudo yunohost app setting $app unprotected_uris -v "/"
-
-# Restart services
-sudo service nginx reload
-sudo yunohost app ssowatconf
-
-# Temporary add domain name to /etc/hosts
-sudo sed -i "1 i\127.0.0.1 $domain #bozon_hosts" /etc/hosts
-
-#make request to install app
-#get the html page 
-curl_path=$([ "$path" == "/" ] || echo $path)
-#curl -kL -o install_page.html https://$domain$curl_path/index.php?p=admin >/dev/null 2>&1
-
-
-#get the token for form validation
-#token=$(cat install_page.html | grep "input" | grep "token" | tail -1 | cut -d' ' -f3 | cut -d'"' -f2)
-#send http POST values
-curl -k -X POST \
-  --data-urlencode "login=$admin" \
-  --data-urlencode "pass=$password" \
-  --data-urlencode "confirm=$password" \
-  --data-urlencode "submit=Ok" \
-  https://$domain$curl_path/index.php?p=login > /dev/null 2>&1
-
-#remove domain name from /etc/hosts
-sudo sed -i "/#bozon_hosts/d" /etc/hosts
 
 # If app is private, remove url to SSOWat conf from skipped_uris
 if [ "$is_public" = "No" ];

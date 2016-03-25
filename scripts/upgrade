@@ -20,7 +20,9 @@ sudo find $final_path -type f -name ".htaccess" | xargs sudo rm
 sudo rm $final_path/install.php
 
 sudo chown -R root: $final_path
-sudo chown -R www-data: $final_path/data
+sudo chown -R www-data: $final_path/private
+sudo chown -R www-data: $final_path/uploads
+sudo chown -R www-data: $final_path/thumbs
 sudo find $final_path -type f | xargs sudo chmod 644
 sudo find $final_path -type d | xargs sudo chmod 755
 

@@ -47,15 +47,6 @@
                 "example": "homer"
             },
             {
-                "name": "password",
-                "type": "password",
-                "ask": {
-                    "en": "Choose an admin password for BoZoN",
-                    "fr": "Choisissez un mot de passe administrateur pour BoZoN"
-                },
-                "example": "super_secret_password"
-            },
-            {
                 "name": "public_site",
                 "ask": {
                     "en": "Should this application be public ?",
@@ -73,8 +64,6 @@
                 "choices": ["de","en","es","fr","it","nl","pl","pt","po","ro","ru"],
                 "default": "en"
             }
-
-
         ]
     }
 }
