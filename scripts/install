@@ -46,6 +46,14 @@ sudo find $final_path -type d | xargs sudo chmod 755
 # Configure config file
 sudo sed -i "s@'en'@'$default_lang'@g" $final_path/config.php
 
+# Create data folders
+sudo mkdir -p $final_path/private
+sudo mkdir -p $final_path/uploads
+sudo mkdir -p $final_path/thumbs
+sudo chown -R www-data: $final_path/private
+sudo chown -R www-data: $final_path/uploads
+sudo chown -R www-data: $final_path/thumbs
+
 # Configure nginx settings
 folder_path=${path%/}
 sudo sed -i "s@YNH_EXAMPLE_PATH@$path@g" ../conf/nginx.conf
@@ -68,7 +76,7 @@ sudo sed -i "1 i\127.0.0.1 $domain #bozon_hosts" /etc/hosts
 
 #make request to install app
 #get the html page 
-#curl_path=$([ "$path" == "/" ] || echo $path)
+curl_path=$([ "$path" == "/" ] || echo $path)
 #curl -kL -o install_page.html https://$domain$curl_path/index.php?p=admin >/dev/null 2>&1
 
 
