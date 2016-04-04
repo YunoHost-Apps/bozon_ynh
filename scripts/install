@@ -35,11 +35,10 @@ sudo yunohost app setting $app domain -v "$domain"
 sudo yunohost app setting $app path -v "$path"
 
 # Download bozon
-cd $parent_path
-sudo wget https://github.com/broncowdd/BoZoN/archive/master.zip
-sudo unzip master.zip
-sudo rm master.zip
-sudo mv BoZoN-master $app
+sudo wget https://github.com/broncowdd/BoZoN/archive/master.zip -O $parent_path
+sudo unzip $parent_path/master.zip
+sudo rm $parent_path/master.zip
+sudo mv $parent_path/BoZoN-master $parent_path/$app
 
 # Copy files to final folder and set permissions
 sudo find $final_path -type f -name ".htaccess" | xargs sudo rm
