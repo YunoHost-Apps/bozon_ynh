@@ -1,13 +1,16 @@
 #! /bin/bash
 
-app=bozon
-
 #retrieve arguments
 domain=$1
 path=$2
 admin=$3
 is_public=$4
 default_lang=$5
+
+# definie useful vars
+app=bozon
+parent_path=/var/www
+final_path=$parent_path/$app
 
 # Remove trailing slash
 [ "$path" != "/" ] && path=${path%/}
@@ -31,12 +34,14 @@ sudo yunohost app setting $app is_public -v "$is_public"
 sudo yunohost app setting $app domain -v "$domain"
 sudo yunohost app setting $app path -v "$path"
 
-# Create path for copying
-final_path=/var/www/$app
-sudo mkdir -p $final_path
+# Download bozon
+cd $parent_path
+sudo wget https://github.com/broncowdd/BoZoN/archive/master.zip
+sudo unzip master.zip
+sudo rm master.zip
+sudo mv BoZoN-master $app
 
 # Copy files to final folder and set permissions
-sudo cp -R ../sources/* $final_path/
 sudo find $final_path -type f -name ".htaccess" | xargs sudo rm
 sudo chown -R root: $final_path
 sudo find $final_path -type f | xargs sudo chmod 644

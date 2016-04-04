@@ -1,10 +1,24 @@
 #! /bin/bash
 
+# definie useful vars
 app=bozon
-app_path=/var/www/$app
-save_path=$1
+parent_path=/var/www
+final_path=$parent_path/$app
 
-sudo mv $save_path $app_path
-sudo chown -R www-data: $app_path/private
-sudo chown -R www-data: $app_path/uploads
-sudo chown -R www-data: $app_path/thumbs
+#retrieve arguments
+save_path=$1
+domain=$(sudo yunohost app setting $app domain)
+
+# move the backup
+sudo mv $save_path/$app $final_path
+
+# restore permissions
+sudo chown -R root: $final_path
+sudo find $final_path -type f | xargs sudo chmod 644
+sudo find $final_path -type d | xargs sudo chmod 755
+sudo chown -R www-data: $final_path/private
+sudo chown -R www-data: $final_path/uploads
+sudo chown -R www-data: $final_path/thumbs
+
+sudo cp -a $save_path/yunohost /etc/yunohost/apps/$app/.
+sudo cp -a $save_path/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf

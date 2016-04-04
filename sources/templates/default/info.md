@@ -1,1 +1,0 @@
-Author: Eauland + Bronco

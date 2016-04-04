@@ -1,4 +1,0 @@
-Order Allow,Deny
-<FilesMatch "\.(js)$">
-Allow from all
-</FilesMatch>
