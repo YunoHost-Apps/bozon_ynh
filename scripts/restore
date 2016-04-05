@@ -7,21 +7,24 @@ set -e
 app=bozon
 parent_path=/var/www
 final_path=$parent_path/$app
+data_path=/home/yunohost.app/$app
 
-#retrieve arguments
+# retrieve arguments
 save_path=$1
 domain=$(sudo yunohost app setting $app domain)
 
-# move the backup
-sudo mv $save_path/$app $final_path
+# restore sources & data
+sudo mv $save_path/www/. $final_path/
+sudo mv $save_path/datas/. $data_path/
 
 # restore permissions
 sudo chown -R root: $final_path
 sudo find $final_path -type f | xargs sudo chmod 644
 sudo find $final_path -type d | xargs sudo chmod 755
 sudo chown -R www-data: $final_path/private
-sudo chown -R www-data: $final_path/uploads
-sudo chown -R www-data: $final_path/thumbs
+sudo chown -R www-data: $data_path/uploads
+sudo chown -R www-data: $data_path/thumbs
 
-sudo cp -a $save_path/yunohost /etc/yunohost/apps/$app/.
+# restore Nginx and YunoHost parameters
+sudo cp -a $save_path/yunohost/. /etc/yunohost/apps/$app/
 sudo cp -a $save_path/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf

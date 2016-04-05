@@ -3,7 +3,7 @@
 # causes the shell to exit if any subcommand or pipeline returns a non-zero status
 set -e
 
-#retrieve arguments
+# retrieve arguments
 domain=$1
 path=$2
 admin=$3
@@ -14,74 +14,77 @@ default_lang=$5
 app=bozon
 parent_path=/var/www
 final_path=$parent_path/$app
+data_path=/home/yunohost.app/$app
 
-# Remove trailing slash
+# remove trailing slash
 [ "$path" != "/" ] && path=${path%/}
 
-# Check domain/path availability
+# check domain/path availability
 sudo yunohost app checkurl $domain$path -a $app
 if [[ ! $? -eq 0 ]]; then
   exit 1
 fi
 
-# Check user
+# check user
 sudo yunohost user list --json | grep -q "\"username\": \"$admin\""
 if [[ ! $? -eq 0 ]]; then
   echo "Wrong user"
   exit 1
 fi
 
-# Save app settings
+# save app settings
 sudo yunohost app setting $app admin -v "$admin"
 sudo yunohost app setting $app is_public -v "$is_public"
 sudo yunohost app setting $app domain -v "$domain"
 sudo yunohost app setting $app path -v "$path"
 
-# Download bozon
+# download bozon
 sudo wget https://github.com/broncowdd/BoZoN/archive/master.zip -O $parent_path/master.zip
 sudo unzip $parent_path/master.zip -d $parent_path/
 sudo rm $parent_path/master.zip
 sudo mv $parent_path/BoZoN-master $parent_path/$app
 
-# Copy files to final folder and set permissions
+# copy files to final folder and set permissions
 sudo find $final_path -type f -name ".htaccess" | xargs sudo rm
 sudo chown -R root: $final_path
 sudo find $final_path -type f | xargs sudo chmod 644
 sudo find $final_path -type d | xargs sudo chmod 755
 
-# Configure config file
+# configure config file
 sudo sed -i "s@'en'@'$default_lang'@g" $final_path/config.php
 
-# Create data folders
+# create data folders
 sudo mkdir -p $final_path/private
-sudo mkdir -p $final_path/uploads
-sudo mkdir -p $final_path/thumbs
+sudo mkdir -p $data_path/uploads
+sudo ln -s $data_path/uploads $final_path/uploads
+sudo mkdir -p $data_path/thumbs
+sudo ln -s $data_path/thumbs $final_path/thumbs
 sudo chown -R www-data: $final_path/private
-sudo chown -R www-data: $final_path/uploads
-sudo chown -R www-data: $final_path/thumbs
+sudo chown -R www-data: $data_path/uploads
+sudo chown -R www-data: $data_path/thumbs
 
-# Configure nginx settings
+# configure nginx settings
 folder_path=${path%/}
 sudo sed -i "s@YNH_EXAMPLE_PATH@$path@g" ../conf/nginx.conf
-# If path is only / (without subfolder), add trailing slash to alias
+# if path is only / (without subfolder), add trailing slash to alias
 alias_path=$final_path
 [ "$path" == '/' ] && alias_path=$alias_path'/'
 sudo sed -i "s@YNH_EXAMPLE_ALIAS@$alias_path@g" ../conf/nginx.conf
 sudo sed -i "s@YNH_EXAMPLE_FOLDER@$folder_path@g" ../conf/nginx.conf
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
 
-# If app is private, remove url to SSOWat conf from skipped_uris
+# if app is private, remove url to SSOWat conf from skipped_uris
 if [ "$is_public" = "No" ];
 then
-    # Redirect to SSOwat login in
+    # redirect to SSOwat login in
     sudo yunohost app setting $app unprotected_uris -d
 else
     sudo yunohost app setting $app unprotected_uris -v "/"
 fi
 
-# Adding admin to the allowed users
+# adding admin to the allowed users
 sudo yunohost app addaccess $app -u $admin
 
-# Restart services
+# restart services
 sudo service nginx reload
 sudo yunohost app ssowatconf

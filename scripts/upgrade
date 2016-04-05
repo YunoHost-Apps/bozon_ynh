@@ -6,25 +6,17 @@ set -e
 app=bozon
 parent_path=/var/www
 final_path=$parent_path/$app
+data_path=/home/yunohost.app/$app
 
-#retrieve arguments
+# retrieve arguments
 path=$(sudo yunohost app setting $app path)
 
-# Download bozon
-cd $parent_path
-sudo wget https://github.com/broncowdd/BoZoN/archive/master.zip
-sudo unzip master.zip
-sudo rm master.zip
-sudo mv BoZoN-master $app
-
-# Copy files to final folder and set permissions
-sudo find $final_path -type f -name ".htaccess" | xargs sudo rm
-sudo chown -R root: $final_path
-sudo find $final_path -type f | xargs sudo chmod 644
-sudo find $final_path -type d | xargs sudo chmod 755
-sudo chown -R www-data: $final_path/private
-sudo chown -R www-data: $final_path/uploads
-sudo chown -R www-data: $final_path/thumbs
+# download bozon
+sudo wget https://github.com/broncowdd/BoZoN/archive/master.zip -O $parent_path/master.zip
+sudo unzip $parent_path/master.zip -d $parent_path/
+sudo rm $parent_path/master.zip
+sudo rsync -avz --exclude="config.php" --exclude=".htaccess" $parent_path/BoZoN-master/* $parent_path/$app/
+sudo rm -R $parent_path/BoZoN-master
 
 # Restart services
 sudo service nginx reload
