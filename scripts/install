@@ -46,7 +46,7 @@ sudo rm $parent_path/master.zip
 sudo mv $parent_path/BoZoN-master $parent_path/$app
 
 # add required packages
-sudo apt-get install php5-curl php5-gd bc
+sudo apt-get install php5-curl php5-gd
 
 # copy files to final folder and set permissions
 sudo find $final_path -type f -name ".htaccess" | xargs sudo rm
@@ -69,7 +69,7 @@ sudo chown -R www-data: $data_path/thumbs
 
 # configure nginx settings
 ## file upload size limit
-postsize=$(echo "${filesize%?} + 0.1" | bc)$(echo ${filesize: -1})
+postsize=$(echo "${filesize%?}.1${filesize: -1}")
 sudo sed -i "s@YNH_FILE_SIZE@$filesize@g" ../conf/nginx.conf
 sudo sed -i "s@YNH_POST_SIZE@$postsize@g" ../conf/nginx.conf
 ## path
