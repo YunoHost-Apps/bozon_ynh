@@ -46,7 +46,7 @@ sudo rm $parent_path/master.zip
 sudo mv $parent_path/BoZoN-master $parent_path/$app
 
 # add required packages
-sudo apt-get install php5-curl php5-gd
+sudo apt-get install php5-curl php5-gd bc
 
 # copy files to final folder and set permissions
 sudo find $final_path -type f -name ".htaccess" | xargs sudo rm
