@@ -63,6 +63,14 @@
                 },
                 "choices": ["de","en","es","fr","it","nl","pl","pt","po","ro","ru"],
                 "default": "en"
+            },
+            {
+                "name": "filesize",
+                "ask": {
+                    "en": "Define the file upload size limit",
+                    "fr": "Définissez la taille limite de téléchargement"
+                },
+                "default": "2G"
             }
         ]
     }
