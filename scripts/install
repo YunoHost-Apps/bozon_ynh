@@ -55,7 +55,7 @@ sudo find $final_path -type f | xargs sudo chmod 644
 sudo find $final_path -type d | xargs sudo chmod 755
 
 # configure config file
-sudo sed -i "s@'en'@'$default_lang'@g" $final_path/config.php
+sudo sed -i "s@default_language='en';@default_language='$default_lang';@g" $final_path/config.php
 
 # create data folders
 sudo mkdir -p $final_path/private
