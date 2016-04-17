@@ -36,7 +36,7 @@ if [ "$version" = "Latest" ];
 then
     sudo wget https://github.com/broncowdd/BoZoN/archive/master.zip -O $parent_path/master.zip
 else
-    stable=$(curl https://github.com/ewilly/bozon_ynh/blob/master/BoZoN-stable)
+    stable=$(curl https://raw.githubusercontent.com/ewilly/bozon_ynh/master/BoZoN-stable)
     sudo wget https://github.com/broncowdd/BoZoN/archive/$stable.zip -O $parent_path/master.zip
 fi
 sudo unzip $parent_path/master.zip -d $parent_path/
