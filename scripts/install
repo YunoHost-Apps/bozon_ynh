@@ -9,6 +9,7 @@ path=$2
 is_public=$3
 default_lang=$4
 filesize=$5
+version=$6
 
 # definie useful vars
 app=bozon
@@ -31,10 +32,16 @@ sudo yunohost app setting $app domain -v "$domain"
 sudo yunohost app setting $app path -v "$path"
 
 # download bozon
-sudo wget https://github.com/broncowdd/BoZoN/archive/master.zip -O $parent_path/master.zip
+if [ "$version" = "Latest" ];
+then
+    sudo wget https://github.com/broncowdd/BoZoN/archive/master.zip -O $parent_path/master.zip
+else
+    stable=$(curl https://github.com/ewilly/bozon_ynh/blob/master/BoZoN-stable)
+    sudo wget https://github.com/broncowdd/BoZoN/archive/$stable.zip -O $parent_path/master.zip
+fi
 sudo unzip $parent_path/master.zip -d $parent_path/
 sudo rm $parent_path/master.zip
-sudo mv $parent_path/BoZoN-master $parent_path/$app
+sudo mv $parent_path/BoZoN-* $parent_path/$app
 
 # add required packages
 sudo apt-get install php5-curl php5-gd

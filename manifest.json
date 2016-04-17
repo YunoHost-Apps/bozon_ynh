@@ -62,6 +62,15 @@
                     "fr": "Définissez la taille limite de téléchargement"
                 },
                 "default": "2G"
+            },
+            {
+                "name": "version",
+                "ask": {
+                    "en": "Select the version of BoZoN you want to install",
+                    "fr": "Sélectionnez la version de BoZoN que vous souhaitez installer"
+                },
+                "choices": ["Stable","Latest"],
+                "default": "Stable"
             }
         ]
     }
