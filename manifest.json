@@ -38,6 +38,15 @@
                 "default": "/bozon"
             },
             {
+                "name": "admin",
+                "type": "user",
+                "ask": {
+                    "en": "Choose an admin user for BoZoN",
+                    "fr": "Choisissez un administrateur pour BoZoN"
+                },
+                "example": "homer"
+            },
+            {
                 "name": "public_site",
                 "ask": {
                     "en": "Should this application be public ?",

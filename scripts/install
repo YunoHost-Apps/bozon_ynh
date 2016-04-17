@@ -6,9 +6,10 @@ set -e
 # retrieve arguments
 domain=$1
 path=$2
-is_public=$3
-default_lang=$4
-filesize=$5
+admin=$3
+is_public=$4
+default_lang=$5
+filesize=$6
 
 # definie useful vars
 app=bozon
@@ -25,7 +26,15 @@ if [[ ! $? -eq 0 ]]; then
   exit 1
 fi
 
+# check user
+sudo yunohost user list --json | grep -q "\"username\": \"$admin\""
+if [[ ! $? -eq 0 ]]; then
+  echo "Wrong user"
+  exit 1
+fi
+
 # save app settings
+sudo yunohost app setting $app admin -v "$admin"
 sudo yunohost app setting $app is_public -v "$is_public"
 sudo yunohost app setting $app domain -v "$domain"
 sudo yunohost app setting $app path -v "$path"
@@ -82,6 +91,9 @@ then
 else
     sudo yunohost app setting $app unprotected_uris -v "/"
 fi
+
+# adding admin to the allowed users
+sudo yunohost app addaccess $app -u $admin
 
 # restart services
 sudo service nginx reload
