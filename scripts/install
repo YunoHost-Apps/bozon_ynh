@@ -9,6 +9,7 @@ path=$2
 admin=$3
 is_public=$4
 default_lang=$5
+filesize=$6
 
 # definie useful vars
 app=bozon
@@ -54,7 +55,7 @@ sudo find $final_path -type f | xargs sudo chmod 644
 sudo find $final_path -type d | xargs sudo chmod 755
 
 # configure config file
-sudo sed -i "s@'en'@'$default_lang'@g" $final_path/config.php
+sudo sed -i "s@default_language='en';@default_language='$default_lang';@g" $final_path/config.php
 
 # create data folders
 sudo mkdir -p $final_path/private
@@ -67,6 +68,11 @@ sudo chown -R www-data: $data_path/uploads
 sudo chown -R www-data: $data_path/thumbs
 
 # configure nginx settings
+## file upload size limit
+postsize=$(echo "${filesize%?}.1${filesize: -1}")
+sudo sed -i "s@YNH_FILE_SIZE@$filesize@g" ../conf/nginx.conf
+sudo sed -i "s@YNH_POST_SIZE@$postsize@g" ../conf/nginx.conf
+## path
 folder_path=${path%/}
 sudo sed -i "s@YNH_EXAMPLE_PATH@$path@g" ../conf/nginx.conf
 # if path is only / (without subfolder), add trailing slash to alias
@@ -74,6 +80,7 @@ alias_path=$final_path
 [ "$path" == '/' ] && alias_path=$alias_path'/'
 sudo sed -i "s@YNH_EXAMPLE_ALIAS@$alias_path@g" ../conf/nginx.conf
 sudo sed -i "s@YNH_EXAMPLE_FOLDER@$folder_path@g" ../conf/nginx.conf
+
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
 
 # if app is private, remove url to SSOWat conf from skipped_uris
