@@ -71,6 +71,24 @@
                 },
                 "choices": ["Stable","Latest"],
                 "default": "Stable"
+            },
+            {
+                "name": "admin",
+                "type": "user",
+                "ask": {
+                    "en": "Choose an admin user for BoZoN",
+                    "fr": "Choisissez un administrateur pour BoZoN"
+                },
+                "example": "homer"
+            },
+            {
+                "name": "password",
+                "type": "password",
+                "ask": {
+                    "en": "Choose an admin password for BoZoN",
+                    "fr": "Choisissez un mot de passe administrateur pour BoZoN"
+                },
+                "example": "super_secret_password"
             }
         ]
     }

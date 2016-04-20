@@ -10,6 +10,8 @@ is_public=$3
 default_lang=$4
 filesize=$5
 version=$6
+admin=$7
+password=$8
 
 # definie useful vars
 app=bozon
@@ -80,6 +82,21 @@ sudo sed -i "s@YNH_EXAMPLE_ALIAS@$alias_path@g" ../conf/nginx.conf
 sudo sed -i "s@YNH_EXAMPLE_FOLDER@$folder_path@g" ../conf/nginx.conf
 
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
+
+# create the superadmin
+## set temporary public access
+sudo yunohost app setting $app unprotected_uris -v "/"
+## start app
+sudo service nginx reload
+sudo yunohost app ssowatconf
+## fill the superadmin creation form
+curl_path=$([ "$path" == "/" ] || echo $path)
+curl -k -X POST \
+  -d creation="1" \
+  -d login=$admin \
+  -d pass=$password \
+  -d confirm=$password \
+  https://$domain$curl_path/index.php?p=admin > /dev/null 2>&1
 
 # if app is private, remove url to SSOWat conf from skipped_uris
 if [ "$is_public" = "No" ];
