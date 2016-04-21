@@ -92,10 +92,10 @@ sudo yunohost app ssowatconf
 ## fill the superadmin creation form
 curl_path=$([ "$path" == "/" ] || echo $path)
 curl -k -X POST \
-  -d creation="1" \
-  -d login=$admin \
-  -d pass=$password \
-  -d confirm=$password \
+  --data-urlencode creation="1" \
+  --data-urlencode login="$admin" \
+  --data-urlencode pass="$password" \
+  --data-urlencode confirm="$password" \
   https://$domain$curl_path/index.php?p=admin > /dev/null 2>&1
 
 # if app is private, remove url to SSOWat conf from skipped_uris
