@@ -111,6 +111,7 @@ if [ "$is_public" = "No" ];
 then
     # redirect to SSOwat login in
     sudo yunohost app setting $app unprotected_uris -d
+    sudo yunohost app setting bozon unprotected_regex -v "$domain$path/index.php%?f=.*$"
 else
     sudo yunohost app setting $app unprotected_uris -v "/"
 fi

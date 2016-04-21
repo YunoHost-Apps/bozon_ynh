@@ -40,11 +40,11 @@
             {
                 "name": "public_site",
                 "ask": {
-                    "en": "Should this application be public ?",
-                    "fr": "Est-ce que cette application doit être visible publiquement ?"
+                    "en": "Should this application be public ? (if not, sharing file with unregistered users still work)",
+                    "fr": "Est-ce que cette application doit être visible publiquement ? (dans le cas contraire, le partage de fichiers avec des utilisateurs externes fonctionnera tout de même)"
                 },
                 "choices": ["Yes", "No"],
-                "default": "Yes"
+                "default": "No"
             },
             {
                 "name": "default_lang",
