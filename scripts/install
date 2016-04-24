@@ -109,11 +109,17 @@ curl -k -X POST \
 # if app is private, remove url to SSOWat conf from skipped_uris
 if [ "$is_public" = "No" ];
 then
+    # escape magic chars in vars (lua magic chars are ().%+-*?[^$ according to https://www.lua.org/pil/20.2.html)
+    domainluaregex=$(echo "$domain" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
+    pathluaregex=$(echo "$path" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
     # redirect to SSOwat login in
     sudo yunohost app setting $app unprotected_uris -d
-    sudo yunohost app setting $app unprotected_regex -v "$domain$path/index.php%?f=.*$","$domain$path/index.php%?zipfolder=.*$","$domain$path/core/js/.*$","$domain$path/templates/.*$","$domain$path/private/temp/.*%.zip$"
-else
-    sudo yunohost app setting $app unprotected_uris -v "/"
+    sudo yunohost app setting $app unprotected_regex -v \
+        "$domainluaregex$pathluaregex/index.php%?f=.+$", \
+        "$domainluaregex$pathluaregex/index.php%?zipfolder=.+$", \
+        "$domainluaregex$pathluaregex/private/temp/.+%.zip$", \
+        "$domainluaregex$pathluaregex/core/js/.*$", \
+        "$domainluaregex$pathluaregex/templates/.*$"
 fi
 
 # restart services
