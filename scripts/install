@@ -114,12 +114,7 @@ then
     pathluaregex=$(echo "$path" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
     # redirect to SSOwat login in
     sudo yunohost app setting $app unprotected_uris -d
-    sudo yunohost app setting $app unprotected_regex -v \
-        "$domainluaregex$pathluaregex/index.php%?f=.+$", \
-        "$domainluaregex$pathluaregex/index.php%?zipfolder=.+$", \
-        "$domainluaregex$pathluaregex/private/temp/.+%.zip$", \
-        "$domainluaregex$pathluaregex/core/js/.*$", \
-        "$domainluaregex$pathluaregex/templates/.*$"
+    sudo yunohost app setting $app unprotected_regex -v "$domainluaregex$pathluaregex/index.php%?f=.+$","$domainluaregex$pathluaregex/index.php%?zipfolder=.+$","$domainluaregex$pathluaregex/private/temp/.+%.zip$","$domainluaregex$pathluaregex/core/js/.*$","$domainluaregex$pathluaregex/templates/.*$"
 fi
 
 # restart services
