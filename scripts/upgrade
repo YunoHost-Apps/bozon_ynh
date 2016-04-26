@@ -39,7 +39,7 @@ sudo rm -R $parent_path/BoZoN-$stable
 
 # configure nginx settings
 ## file upload size limit
-postsize=$(echo "${filesize%?}.1${filesize: -1}")
+postsize=${filesize%?}.1${filesize: -1}
 sudo sed -i "s@YNH_FILE_SIZE@$filesize@g" ../conf/nginx.conf
 sudo sed -i "s@YNH_POST_SIZE@$postsize@g" ../conf/nginx.conf
 ## path
