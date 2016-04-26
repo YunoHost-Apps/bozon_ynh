@@ -12,9 +12,9 @@ path=$(sudo yunohost app setting $app path)
 stable=$(sudo yunohost app setting $app version)
 is_public=$(sudo yunohost app setting $app is_public)
 filesize=$(sudo yunohost app setting $app filesize)
+domain=$(sudo yunohost app setting $app domain)
 if [ "${#filesize}" -eq 0 ]
 then	# in old script filesize was not saved as an setting
-    domain=$(sudo yunohost app setting $app domain)
 	filesize=$(cat /etc/nginx/conf.d/$domain.d/$app.conf | grep -Po 'client_max_body_size \K.*(?=;)')
 	sudo yunohost app setting $app filesize -v "$filesize"
 fi
