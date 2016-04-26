@@ -45,6 +45,7 @@ sudo yunohost app setting $app is_public -v "$is_public"
 sudo yunohost app setting $app domain -v "$domain"
 sudo yunohost app setting $app path -v "$path"
 sudo yunohost app setting $app version -v "$stable"
+sudo yunohost app setting $app filesize -v "$filesize"
 
 # download stable version of bozon
 sudo wget https://github.com/broncowdd/BoZoN/archive/$stable.zip -O $parent_path/bozon-$stable.zip
