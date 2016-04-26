@@ -5,13 +5,14 @@ set -e
 # causes the shell to exit if you try to use an uninitialised variable
 set -u
 
+app=bozon
+
 # retrieve arguments
 path=$(sudo yunohost app setting $app path)
 stable=$(sudo yunohost app setting $app version)
 is_public=$(sudo yunohost app setting $app is_public)
 
 # definie useful vars
-app=bozon
 parent_path=/var/www
 data_path=/home/yunohost.app/$app
 final_path=$parent_path/$path
