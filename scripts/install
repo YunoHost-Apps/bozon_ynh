@@ -2,6 +2,8 @@
 
 # causes the shell to exit if any subcommand or pipeline returns a non-zero status
 set -e
+# causes the shell to exit if you try to use an uninitialised variable
+set -u
 
 # retrieve arguments
 domain=$1
@@ -9,9 +11,8 @@ path=$2
 is_public=$3
 default_lang=$4
 filesize=$5
-version=$6
-admin=$7
-password=$8
+admin=$6
+password=$7
 
 # definie useful vars
 app=bozon
@@ -35,22 +36,20 @@ if [[ ! $? -eq 0 ]]; then
     exit 1
 fi
 
+# retrieve stable version of bozon
+stable=$(cat ../BoZoN-stable)
+
 # save app settings
 sudo yunohost app setting $app admin_user -v "$admin"
 sudo yunohost app setting $app is_public -v "$is_public"
 sudo yunohost app setting $app domain -v "$domain"
 sudo yunohost app setting $app path -v "$path"
+sudo yunohost app setting $app version -v "$stable"
 
-# download bozon
-if [ "$version" = "Latest" ];
-then
-    sudo wget https://github.com/broncowdd/BoZoN/archive/master.zip -O $parent_path/master.zip
-else
-    stable=$(curl https://raw.githubusercontent.com/ewilly/bozon_ynh/master/BoZoN-stable)
-    sudo wget https://github.com/broncowdd/BoZoN/archive/$stable.zip -O $parent_path/master.zip
-fi
-sudo unzip $parent_path/master.zip -d $parent_path/
-sudo rm $parent_path/master.zip
+# download stable version of bozon
+sudo wget https://github.com/broncowdd/BoZoN/archive/$stable.zip -O $parent_path/bozon-$stable.zip
+sudo unzip $parent_path/bozon-$stable.zip -d $parent_path/
+sudo rm $parent_path/bozon-$stable.zip
 sudo mv $parent_path/BoZoN-* $parent_path/$app
 
 # add required packages
