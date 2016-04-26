@@ -20,6 +20,9 @@ final_path=$parent_path/$path
 # retrieve stable version of bozon
 stable=$(cat ../BoZoN-stable)
 
+# save app settings
+sudo yunohost app setting $app version -v "$stable"
+
 # download stable version of bozon
 sudo wget https://github.com/broncowdd/BoZoN/archive/$stable.zip -O $parent_path/bozon-$stable.zip
 sudo unzip $parent_path/bozon-$stable.zip -d $parent_path/
