@@ -2,21 +2,56 @@
 
 # causes the shell to exit if any subcommand or pipeline returns a non-zero status
 set -e
-
-app=bozon
-parent_path=/var/www
-final_path=$parent_path/$app
-data_path=/home/yunohost.app/$app
+# causes the shell to exit if you try to use an uninitialised variable
+set -u
 
 # retrieve arguments
 path=$(sudo yunohost app setting $app path)
+stable=$(sudo yunohost app setting $app version)
+is_public=$(sudo yunohost app setting $app is_public)
 
-# download bozon
-sudo wget https://github.com/broncowdd/BoZoN/archive/master.zip -O $parent_path/master.zip
-sudo unzip $parent_path/master.zip -d $parent_path/
-sudo rm $parent_path/master.zip
-sudo rsync -avz --exclude="config.php" --exclude=".htaccess" $parent_path/BoZoN-master/* $parent_path/$app/
-sudo rm -R $parent_path/BoZoN-master
+# definie useful vars
+app=bozon
+parent_path=/var/www
+data_path=/home/yunohost.app/$app
+final_path=$parent_path/$path
+
+# retrieve stable version of bozon
+stable=$(cat ../BoZoN-stable)
+
+# download stable version of bozon
+sudo wget https://github.com/broncowdd/BoZoN/archive/$stable.zip -O $parent_path/bozon-$stable.zip
+sudo unzip $parent_path/bozon-$stable.zip -d $parent_path/
+sudo rm $parent_path/bozon-$stable.zip
+sudo rsync -avz --exclude="config.php" --exclude=".htaccess" $parent_path/BoZoN-$stable/* $final_path
+sudo rm -R $parent_path/BoZoN-$stable
+
+# configure nginx settings
+## file upload size limit
+postsize=$(echo "${filesize%?}.1${filesize: -1}")
+sudo sed -i "s@YNH_FILE_SIZE@$filesize@g" ../conf/nginx.conf
+sudo sed -i "s@YNH_POST_SIZE@$postsize@g" ../conf/nginx.conf
+## path
+folder_path=${path%/}
+sudo sed -i "s@YNH_EXAMPLE_PATH@$path@g" ../conf/nginx.conf
+# if path is only / (without subfolder), add trailing slash to alias
+alias_path=$final_path
+[ "$path" == '/' ] && alias_path=$alias_path'/'
+sudo sed -i "s@YNH_EXAMPLE_ALIAS@$alias_path@g" ../conf/nginx.conf
+sudo sed -i "s@YNH_EXAMPLE_FOLDER@$folder_path@g" ../conf/nginx.conf
+
+sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
+
+# if app is private, remove url to SSOWat conf from skipped_uris
+if [ "$is_public" = "No" ];
+then
+    # escape magic chars in vars (lua magic chars are ().%+-*?[^$ according to https://www.lua.org/pil/20.2.html)
+    domainluaregex=$(echo "$domain" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
+    pathluaregex=$(echo "$path" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
+    # redirect to SSOwat login in
+    sudo yunohost app setting $app unprotected_uris -d
+    sudo yunohost app setting $app unprotected_regex -v "$domainluaregex$pathluaregex/index.php%?f=.+$","$domainluaregex$pathluaregex/index.php%?zipfolder=.+$","$domainluaregex$pathluaregex/private/temp/.+%.zip$","$domainluaregex$pathluaregex/core/js/.*$","$domainluaregex$pathluaregex/templates/.*$"
+fi
 
 # Restart services
 sudo service nginx reload
