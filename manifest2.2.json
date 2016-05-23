@@ -13,7 +13,7 @@
         "email": "ewilly@neuf.fr"
     },
     "requirements": {
-        "yunohost": ">= 2.4"
+        "yunohost": ">> 2.2.1.1"
     },
     "multi_instance": "false",
     "services": [

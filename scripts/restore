@@ -5,15 +5,22 @@ set -e
 # causes the shell to exit if you try to use an uninitialised variable
 set -u
 
+ynh_version=$(sudo yunohost -v | grep "moulinette:" | cut -d' ' -f2 | cut -d'.' -f1,2)
+
+#retrieve arguments
+if [ $ynh_version = "2.4" ]; then
+	app=$YNH_APP_INSTANCE_NAME
+else
+	app=bozon
+fi
+save_path=$1
+domain=$(sudo yunohost app setting $app domain)
+
 # definie useful vars
 app=bozon
 parent_path=/var/www
 final_path=$parent_path/$app
 data_path=/home/yunohost.app/$app
-
-# retrieve arguments
-save_path=$1
-domain=$(sudo yunohost app setting $app domain)
 
 # restore sources & data
 sudo mv $save_path/www/. $final_path/

@@ -5,17 +5,54 @@ set -e
 # causes the shell to exit if you try to use an uninitialised variable
 set -u
 
+ynh_version=$(sudo yunohost -v | grep "moulinette:" | cut -d' ' -f2 | cut -d'.' -f1,2)
+
 # retrieve arguments
-domain=$1
-path=$2
-is_public=$3
-default_lang=$4
-filesize=$5
-admin=$6
-password=$7
+if [ $ynh_version = "2.4" ]; then
+	app=$YNH_APP_INSTANCE_NAME
+	domain=$YNH_APP_ARG_DOMAIN
+	path=$YNH_APP_ARG_PATH
+	is_public=$YNH_APP_ARG_IS_PUBLIC
+	language=$YNH_APP_ARG_LANGUAGE
+	filesize=$YNH_APP_ARG_FILESIZE
+	admin=$YNH_APP_ARG_ADMIN
+	password_admin=$YNH_APP_ARG_PASSWORD
+	# Source app helpers
+	. /usr/share/yunohost/helpers
+else
+	app=bozon
+	domain=$1
+	path=$2
+	is_public=$3
+	language=$4
+	filesize=$5
+	admin=$6
+	password=$7
+fi
+
+# Delete files and db if exit with an error
+EXIT_PROPERLY () {
+	trap '' ERR
+	echo -e "\e[91m \e[1m"	# Shell in light red bold
+	echo -e "!!\n  $app install's script has encountered an error. Installation was cancelled.\n!!"
+
+	if [ $ynh_version = "2.2" ]; then
+		/bin/bash ./remove	# Appel le script remove. En 2.2, ce comportement n'est pas automatique.
+	fi
+	exit 1
+}
+TRAP_ON () {	# Activate signal capture
+	trap EXIT_PROPERLY ERR	# Capturing exit signals on error
+}
+TRAP_OFF () {	# Ignoring signal capture until TRAP_ON
+# Pour une raison que j'ignore, la fonction TRAP_ON fonctionne très bien.
+# Mais pas la fonction TRAP_OFF...
+# Utiliser directement `trap '' ERR` dans le code pour l'utiliser, à la place de la fonction.
+	trap '' ERR	# Ignoring exit signals
+}
+TRAP_ON
 
 # definie useful vars
-app=bozon
 parent_path=/var/www
 final_path=$parent_path/$app
 data_path=/home/yunohost.app/$app
@@ -26,14 +63,14 @@ data_path=/home/yunohost.app/$app
 # check domain/path availability
 sudo yunohost app checkurl $domain$path -a $app
 if [[ ! $? -eq 0 ]]; then
-  exit 1
+	touch /force_stop
 fi
 
 # check that admin user is an existing account
 sudo yunohost user list --json | grep -q "\"username\": \"$admin\""
 if [[ ! $? -eq 0 ]]; then
-    echo "Error : the chosen admin user does not exist"
-    exit 1
+	echo "Error : the chosen admin user does not exist"
+	touch /force_stop
 fi
 
 # retrieve stable version of bozon
@@ -63,7 +100,7 @@ sudo find $final_path -type f | xargs sudo chmod 644
 sudo find $final_path -type d | xargs sudo chmod 755
 
 # configure config file
-sudo sed -i "s@default_language='en';@default_language='$default_lang';@g" $final_path/config.php
+sudo sed -i "s@languageuage='en';@languageuage='$language';@g" $final_path/config.php
 
 # create data folders
 sudo mkdir -p $final_path/private

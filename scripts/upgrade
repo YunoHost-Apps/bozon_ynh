@@ -5,9 +5,14 @@ set -e
 # causes the shell to exit if you try to use an uninitialised variable
 set -u
 
-app=bozon
+ynh_version=$(sudo yunohost -v | grep "moulinette:" | cut -d' ' -f2 | cut -d'.' -f1,2)
 
 # retrieve arguments
+if [ $ynh_version = "2.4" ]; then
+	app=$YNH_APP_INSTANCE_NAME
+else
+	app=bozon
+fi
 path=$(sudo yunohost app setting $app path)
 stable=$(sudo yunohost app setting $app version)
 is_public=$(sudo yunohost app setting $app is_public)
