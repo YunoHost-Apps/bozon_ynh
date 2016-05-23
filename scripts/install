@@ -16,7 +16,7 @@ if [ $ynh_version = "2.4" ]; then
 	language=$YNH_APP_ARG_LANGUAGE
 	filesize=$YNH_APP_ARG_FILESIZE
 	admin=$YNH_APP_ARG_ADMIN
-	password_admin=$YNH_APP_ARG_PASSWORD
+	password=$YNH_APP_ARG_PASSWORD
 	# Source app helpers
 	. /usr/share/yunohost/helpers
 else
