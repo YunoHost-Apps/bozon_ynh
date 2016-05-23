@@ -2,6 +2,8 @@
 
 # causes the shell to exit if any subcommand or pipeline returns a non-zero status
 set -e
+# causes the shell to exit if you try to use an uninitialised variable
+set -u
 
 # definie useful vars
 app=bozon
@@ -25,6 +27,12 @@ sudo chown -R www-data: $final_path/private
 sudo chown -R www-data: $data_path/uploads
 sudo chown -R www-data: $data_path/thumbs
 
-# restore Nginx and YunoHost parameters
+# restore php-fpm, Nginx and YunoHost parameters
 sudo cp -a $save_path/yunohost/. /etc/yunohost/apps/$app/
 sudo cp -a $save_path/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
+sudo cp -a $save_path/php-fpm.conf /etc/php5/fpm/pool.d/$app.conf
+
+# Restart services
+sudo service php5-fpm restart || true
+sudo service nginx restart || true
+sudo yunohost app ssowatconf

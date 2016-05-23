@@ -2,14 +2,18 @@
 
 # causes the shell to exit if any subcommand or pipeline returns a non-zero status
 set -e
+# causes the shell to exit if you try to use an uninitialised variable
+set -u
 
 app=bozon
 domain=$(sudo yunohost app setting $app domain)
 
 sudo rm -rf /var/www/$app
 sudo rm -f /etc/nginx/conf.d/$domain.d/$app.conf
+sudo rm -f /etc/php5/fpm/pool.d/$app.conf
 sudo rm -rf /home/yunohost.app/$app
 
-# restart services
-sudo service nginx reload
+# Restart services
+sudo service php5-fpm restart || true
+sudo service nginx restart || true
 sudo yunohost app ssowatconf

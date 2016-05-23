@@ -17,6 +17,7 @@ domain=$(sudo yunohost app setting $app domain)
 sudo cp -R $final_path/. $save_path/www/
 sudo cp -R $data_path/. $save_path/datas/
 
-# backup Nginx and YunoHost parameters
+# backup php-fpm, Nginx and YunoHost parameters
 sudo cp -a /etc/yunohost/apps/$app/. $save_path/yunohost/
 sudo cp -a /etc/nginx/conf.d/$domain.d/$app.conf $save_path/nginx.conf
+sudo cp -a /etc/php5/fpm/pool.d/$app.conf $save_path/php-fpm.conf
