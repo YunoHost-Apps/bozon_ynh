@@ -1,9 +1,10 @@
 #! /bin/bash
 
-# causes the shell to exit if any subcommand or pipeline returns a non-zero status
-set -e
-# causes the shell to exit if you try to use an uninitialised variable
-set -u
+# Exit on command errors and treat unset variables as an error
+set -eu
+
+# Source YunoHost helpers
+source /usr/share/yunohost/helpers
 
 ynh_version=$(sudo yunohost -v | grep "moulinette:" | cut -d' ' -f2 | cut -d'.' -f1,2)
 
@@ -17,8 +18,6 @@ if [ $ynh_version = "2.4" ]; then
 	filesize=$YNH_APP_ARG_FILESIZE
 	admin=$YNH_APP_ARG_ADMIN
 	password=$YNH_APP_ARG_PASSWORD
-	# Source app helpers
-	. /usr/share/yunohost/helpers
 else
 	app=bozon
 	domain=$1
@@ -37,7 +36,7 @@ EXIT_PROPERLY () {
 	echo -e "!!\n  $app install's script has encountered an error. Installation was cancelled.\n!!"
 
 	if [ $ynh_version = "2.2" ]; then
-		/bin/bash ./remove	# Appel le script remove. En 2.2, ce comportement n'est pas automatique.
+		/bin/bash ./remove	# Appel le script remove. En 2.2, ce comportement n'est pas automatique.s
 	fi
 	exit 1
 }
@@ -73,25 +72,24 @@ if [[ ! $? -eq 0 ]]; then
 	touch /force_stop
 fi
 
-# retrieve stable version of bozon
-stable=$(cat ../BoZoN-stable)
+# add required packages
+ynh_package_install_from_equivs ../conf/${app}-deps.control || ynh_die "Unable to install dependencies"
+
+# retrieve upstream_version version of bozon
+upstream_version=$(cat ../conf/upstream_version)
 
 # save app settings
 sudo yunohost app setting $app admin_user -v "$admin"
 sudo yunohost app setting $app is_public -v "$is_public"
 sudo yunohost app setting $app domain -v "$domain"
 sudo yunohost app setting $app path -v "$path"
-sudo yunohost app setting $app version -v "$stable"
+sudo yunohost app setting $app version -v "$upstream_version"
 sudo yunohost app setting $app filesize -v "$filesize"
 
-# download stable version of bozon
-sudo wget https://github.com/broncowdd/BoZoN/archive/$stable.zip -O $parent_path/bozon-$stable.zip
-sudo unzip $parent_path/bozon-$stable.zip -d $parent_path/
-sudo rm $parent_path/bozon-$stable.zip
-sudo mv $parent_path/BoZoN-* $parent_path/$app
-
-# add required packages
-sudo apt-get install php5-curl php5-gd
+# download upstream_version version of bozon
+wget -nc --quiet https://github.com/broncowdd/BoZoN/archive/$upstream_version.zip -P /tmp
+sudo unzip -oq /tmp/$upstream_version.zip -d /tmp
+sudo mv /tmp/$upstream_version $parent_path/$app
 
 # copy files to final folder and set permissions
 sudo find $final_path -type f -name ".htaccess" | xargs sudo rm

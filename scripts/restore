@@ -1,30 +1,49 @@
 #! /bin/bash
 
-# causes the shell to exit if any subcommand or pipeline returns a non-zero status
-set -e
-# causes the shell to exit if you try to use an uninitialised variable
-set -u
+# Exit on command errors and treat unset variables as an error
+set -eu
 
-ynh_version=$(sudo yunohost -v | grep "moulinette:" | cut -d' ' -f2 | cut -d'.' -f1,2)
+# Source YunoHost helpers
+source /usr/share/yunohost/helpers
 
 #retrieve arguments
-if [ $ynh_version = "2.4" ]; then
-	app=$YNH_APP_INSTANCE_NAME
-else
-	app=bozon
-fi
-save_path=$1
-domain=$(sudo yunohost app setting $app domain)
+app=$YNH_APP_INSTANCE_NAME
+domain=$(ynh_app_setting_get "$app" domain)
 
 # definie useful vars
-app=bozon
 parent_path=/var/www
 final_path=$parent_path/$app
 data_path=/home/yunohost.app/$app
+nginx_conf="/etc/nginx/conf.d/${domain}.d/${app}.conf"
+phpfpm_conf="/etc/php5/fpm/pool.d/${app}.conf"
+
+# check domain/path availability with app helper
+sudo yunohost app checkurl $domain$path -a $app \
+|| ynh_die "The path ${domain}${path} is not available for app installation."
+
+# check directories availability
+[[ -d $final_path ]] && ynh_die \
+"The path '${final_path}' already exists.
+ You should safely delete it before restoring this app."
+[[ -d $data_path ]] && ynh_die \
+"The path '${data_path}' already exists.
+ You should safely delete it before restoring this app."
+
+# check configuration files 
+[[ -f $nginx_conf ]] && ynh_die \
+"The NGINX configuration already exists at '${nginx_conf}'.
+ You should safely delete it before restoring this app."
+[[ -f $phpfpm_conf ]] && ynh_die \
+"The PHP FPM configuration already exists at '${phpfpm_conf}'.
+ You should safely delete it before restoring this app."
+
+# add required packages
+ynh_package_install_from_equivs ../conf/${app}-deps.control || ynh_die "Unable to install dependencies"
 
 # restore sources & data
-sudo mv $save_path/www/. $final_path/
-sudo mv $save_path/datas/. $data_path/
+sudo cp -a ./www "$final_path"
+sudo mkdir -p "$data_path"
+sudo cp -a ./data/. "$data_path"
 
 # restore permissions
 sudo chown -R root: $final_path
@@ -34,10 +53,9 @@ sudo chown -R www-data: $final_path/private
 sudo chown -R www-data: $data_path/uploads
 sudo chown -R www-data: $data_path/thumbs
 
-# restore php-fpm, Nginx and YunoHost parameters
-sudo cp -a $save_path/yunohost/. /etc/yunohost/apps/$app/
-sudo cp -a $save_path/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
-sudo cp -a $save_path/php-fpm.conf /etc/php5/fpm/pool.d/$app.conf
+# restore Nginx & php-fpm
+sudo cp -a ./conf/nginx.conf   "$nginx_conf"
+sudo cp -a ./conf/php-fpm.conf "$phpfpm_conf"
 
 # Restart services
 sudo service php5-fpm restart || true

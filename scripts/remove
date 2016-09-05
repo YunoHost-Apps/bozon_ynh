@@ -1,9 +1,10 @@
 #! /bin/bash
 
-# causes the shell to exit if any subcommand or pipeline returns a non-zero status
-set -e
-# causes the shell to exit if you try to use an uninitialised variable
-set -u
+# Exit on command errors and treat unset variables as an error
+set -eu
+
+# Source YunoHost helpers
+source /usr/share/yunohost/helpers
 
 ynh_version=$(sudo yunohost -v | grep "moulinette:" | cut -d' ' -f2 | cut -d'.' -f1,2)
 
@@ -33,6 +34,9 @@ if [ -e "/home/yunohost.app/$app" ]; then
 	echo "Delete datas"
 	sudo rm -rf /home/yunohost.app/$app
 fi
+
+# Remove app dependencies
+ynh_package_autoremove "${app}-deps" || true
 
 # Restart services
 sudo service php5-fpm restart || true

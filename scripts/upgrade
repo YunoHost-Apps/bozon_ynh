@@ -1,9 +1,10 @@
 #! /bin/bash
 
-# causes the shell to exit if any subcommand or pipeline returns a non-zero status
-set -e
-# causes the shell to exit if you try to use an uninitialised variable
-set -u
+# Exit on command errors and treat unset variables as an error
+set -eu
+
+# Source YunoHost helpers
+source /usr/share/yunohost/helpers
 
 ynh_version=$(sudo yunohost -v | grep "moulinette:" | cut -d' ' -f2 | cut -d'.' -f1,2)
 
@@ -14,7 +15,7 @@ else
 	app=bozon
 fi
 path=$(sudo yunohost app setting $app path)
-stable=$(sudo yunohost app setting $app version)
+upstream_version=$(sudo yunohost app setting $app version)
 is_public=$(sudo yunohost app setting $app is_public)
 filesize=$(sudo yunohost app setting $app filesize)
 domain=$(sudo yunohost app setting $app domain)
@@ -29,18 +30,19 @@ parent_path=/var/www
 data_path=/home/yunohost.app/$app
 final_path=$parent_path/$app
 
-# retrieve stable version of bozon
-stable=$(cat ../BoZoN-stable)
+# add required packages
+ynh_package_install_from_equivs ../conf/${app}-deps.control || ynh_die "Unable to install dependencies"
+
+# retrieve upstream_version version of bozon
+upstream_version=$(cat ../conf/upstream_version)
 
 # save app settings
-sudo yunohost app setting $app version -v "$stable"
+sudo yunohost app setting $app version -v "$upstream_version"
 
-# download stable version of bozon
-sudo wget https://github.com/broncowdd/BoZoN/archive/$stable.zip -O $parent_path/bozon-$stable.zip
-sudo unzip $parent_path/bozon-$stable.zip -d $parent_path/
-sudo rm $parent_path/bozon-$stable.zip
-sudo rsync -avz --exclude="config.php" --exclude=".htaccess" $parent_path/BoZoN-$stable/* $final_path
-sudo rm -R $parent_path/BoZoN-$stable
+# download upstream_version version of bozon
+wget -nc --quiet https://github.com/broncowdd/BoZoN/archive/$upstream_version.zip -P /tmp
+sudo unzip -oq /tmp/$upstream_version.zip -d /tmp
+sudo rsync -avz --exclude="config.php" --exclude=".htaccess" /tmp/$upstream_version/* $final_path
 
 # configure nginx settings
 ## path
