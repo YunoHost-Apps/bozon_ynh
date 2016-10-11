@@ -38,7 +38,6 @@ ynh_app_setting_set "$app" admin_user "$admin"
 ynh_app_setting_set "$app" is_public "$is_public"
 ynh_app_setting_set "$app" domain "$domain"
 ynh_app_setting_set "$app" path "$path"
-ynh_app_setting_set "$app" version "$upstream_version"
 ynh_app_setting_set "$app" filesize "$filesize"
 
 # download upstream_version version of bozon

@@ -26,13 +26,8 @@ fi
 # add required packages
 ynh_package_install_from_equivs ../conf/"$app"-deps.control || ynh_die "Unable to install dependencies"
 
-# retrieve upstream_version version of bozon
-upstream_version=$(cat ../conf/upstream_version)
-
-# save app settings
-ynh_app_setting_set "$app" version "$upstream_version"
-
 # download upstream_version version of bozon
+upstream_version=$(cat ../conf/upstream_version)
 wget -nc --quiet https://github.com/broncowdd/BoZoN/archive/"$upstream_version".zip -P /tmp
 sudo unzip -oq /tmp/"$upstream_version".zip -d /tmp
 sudo rsync -avz --exclude="config.php" --exclude=".htaccess" /tmp/BoZoN-"$upstream_version"/* "$final_path"
