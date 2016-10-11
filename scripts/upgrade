@@ -17,7 +17,7 @@ filesize=$(ynh_app_setting_get "$app" filesize)
 parent_path=/var/www
 data_path=/home/yunohost.app/"$app"
 final_path=$parent_path/"$app"
-if [ ${filesize} -eq 0 ]
+if [ -z "$filesize" ]
 then	# in old script filesize was not saved as an setting
 	filesize=$(cat /etc/nginx/conf.d/"$domain".d/"$app".conf | grep -Po 'client_max_body_size \K.*(?=;)')
 	ynh_app_setting_set "$app" filesize "$filesize"
@@ -35,7 +35,7 @@ ynh_app_setting_set "$app" version "$upstream_version"
 # download upstream_version version of bozon
 wget -nc --quiet https://github.com/broncowdd/BoZoN/archive/"$upstream_version".zip -P /tmp
 sudo unzip -oq /tmp/"$upstream_version".zip -d /tmp
-sudo rsync -avz --exclude="config.php" --exclude=".htaccess" /tmp/"$upstream_version"/* "$final_path"
+sudo rsync -avz --exclude="config.php" --exclude=".htaccess" /tmp/BoZoN-"$upstream_version"/* "$final_path"
 
 # configure nginx settings
 nginx_conf="/etc/nginx/conf.d/${domain}.d/${app}.conf"
