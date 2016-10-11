@@ -84,8 +84,8 @@ sudo chmod 644 "$phpfpm_conf"
 ## set temporary public access
 ynh_app_setting_set "$app" unprotected_uris "/"
 ## start app
-sudo service nginx reload
-sudo yunohost app ssowatconf
+sudo service php5-fpm restart || true
+sudo service nginx restart || true
 ## fill the superadmin creation form
 curl_path=$([ "$path" == "/" ] || echo "$path")
 sudo curl -k -X POST \
