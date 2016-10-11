@@ -51,15 +51,6 @@
                 "default": "No"
             },
             {
-                "name": "language",
-                "ask": {
-                    "en": "Default language",
-                    "fr": "Langue par défaut"
-                },
-                "choices": ["de","en","es","fr"],
-                "default": "en"
-            },
-            {
                 "name": "filesize",
                 "ask": {
                     "en": "Define the file upload size limit",
