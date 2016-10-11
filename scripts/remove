@@ -6,33 +6,25 @@ set -eu
 # Source YunoHost helpers
 source /usr/share/yunohost/helpers
 
-ynh_version=$(sudo yunohost -v | grep "moulinette:" | cut -d' ' -f2 | cut -d'.' -f1,2)
-
 #retrieve arguments
-if [ $ynh_version = "2.4" ]; then
-	app=$YNH_APP_INSTANCE_NAME
-	# Source app helpers
-	. /usr/share/yunohost/helpers
-else
-	app=bozon
-fi
-domain=$(sudo yunohost app setting $app domain)
+app=$YNH_APP_INSTANCE_NAME
+domain=$(ynh_app_setting_get "${app}" domain)
 
-if [ -e "/var/www/$app" ]; then
+if [ -e "/var/www/${app}" ]; then
 	echo "Delete app"
-	sudo rm -rf /var/www/$app
+	sudo rm -rf /var/www/${app}
 fi
-if [ -e "/etc/nginx/conf.d/$domain.d/$app.conf" ]; then
+if [ -e "/etc/nginx/conf.d/${domain}.d/${app}.conf" ]; then
 	echo "Delete Nginx config"
-	sudo rm -f /etc/nginx/conf.d/$domain.d/$app.conf
+	sudo rm -f /etc/nginx/conf.d/${domain}.d/${app}.conf
 fi
-if [ -e "/etc/php5/fpm/pool.d/$app.conf" ]; then
+if [ -e "/etc/php5/fpm/pool.d/${app}.conf" ]; then
 	echo "Delete fpm config"
-	sudo rm -f /etc/php5/fpm/pool.d/$app.conf
+	sudo rm -f /etc/php5/fpm/pool.d/${app}.conf
 fi
-if [ -e "/home/yunohost.app/$app" ]; then
+if [ -e "/home/yunohost.app/${app}" ]; then
 	echo "Delete datas"
-	sudo rm -rf /home/yunohost.app/$app
+	sudo rm -rf /home/yunohost.app/${app}
 fi
 
 # Remove app dependencies
@@ -42,5 +34,3 @@ ynh_package_autoremove "${app}-deps" || true
 sudo service php5-fpm restart || true
 sudo service nginx restart || true
 sudo yunohost app ssowatconf
-
-echo -e "\e[0m"

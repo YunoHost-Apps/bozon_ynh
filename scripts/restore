@@ -12,8 +12,8 @@ domain=$(ynh_app_setting_get "$app" domain)
 
 # definie useful vars
 parent_path=/var/www
-final_path=$parent_path/$app
-data_path=/home/yunohost.app/$app
+final_path="$parent_path"/"$app"
+data_path=/home/yunohost.app/"$app"
 nginx_conf="/etc/nginx/conf.d/${domain}.d/${app}.conf"
 phpfpm_conf="/etc/php5/fpm/pool.d/${app}.conf"
 
@@ -46,12 +46,12 @@ sudo mkdir -p "$data_path"
 sudo cp -a ./data/. "$data_path"
 
 # restore permissions
-sudo chown -R root: $final_path
-sudo find $final_path -type f | xargs sudo chmod 644
-sudo find $final_path -type d | xargs sudo chmod 755
-sudo chown -R www-data: $final_path/private
-sudo chown -R www-data: $data_path/uploads
-sudo chown -R www-data: $data_path/thumbs
+sudo chown -R root: "$final_path"
+sudo find "$final_path" -type f | xargs sudo chmod 644
+sudo find "$final_path" -type d | xargs sudo chmod 755
+sudo chown -R www-data: "$final_path"/private
+sudo chown -R www-data: "$data_path"/uploads
+sudo chown -R www-data: "$data_path"/thumbs
 
 # restore Nginx & php-fpm
 sudo cp -a ./conf/nginx.conf   "$nginx_conf"

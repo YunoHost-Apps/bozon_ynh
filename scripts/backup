@@ -12,8 +12,8 @@ domain=$(ynh_app_setting_get "$app" domain)
 
 # definie useful vars
 parent_path=/var/www
-final_path=$parent_path/$app
-data_path=/home/yunohost.app/$app
+final_path="$parent_path"/"$app"
+data_path=/home/yunohost.app/"$app"
 
 # backup sources & data
 ynh_backup "$final_path" "www"
