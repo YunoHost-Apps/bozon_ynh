@@ -80,21 +80,6 @@ sudo cp ../conf/php-fpm.conf "$phpfpm_conf"
 sudo chown root: "$phpfpm_conf"
 sudo chmod 644 "$phpfpm_conf"
 
-# create the superadmin
-## set temporary public access
-ynh_app_setting_set "$app" unprotected_uris "/"
-## start app
-sudo service php5-fpm restart || true
-sudo service nginx restart || true
-## fill the superadmin creation form
-curl_path=$([ "$path" == "/" ] || echo "$path")
-sudo curl -k -X POST \
-  --data-urlencode creation="1" \
-  --data-urlencode login="$admin" \
-  --data-urlencode pass="$password" \
-  --data-urlencode confirm="$password" \
-  https://"$domain""$curl_path"/index.php?p=login > /dev/null 2>&1
-
 # if app is private, remove url to SSOWat conf from skipped_uris
 if [ "$is_public" = "No" ];
 then
@@ -109,8 +94,19 @@ then
         "${domainluaregex}${pathluaregex}/private/temp/.+%.zip$", \
         "${domainluaregex}${pathluaregex}/core/js/.*$", \
         "${domainluaregex}${pathluaregex}/templates/.*$"
+else
+    ynh_app_setting_set "$app" unprotected_uris "/"
 fi
 
 # restart services
 sudo service php5-fpm restart || true
 sudo service nginx restart || true
+
+# fill the superadmin creation form
+curl_path=$([ "$path" == "/" ] || echo "$path")
+curl -k -X POST \
+  --data-urlencode creation="1" \
+  --data-urlencode login="$admin" \
+  --data-urlencode pass="$password" \
+  --data-urlencode confirm="$password" \
+  https://"$domain""$curl_path"/index.php?p=login #> /dev/null 2>&1
