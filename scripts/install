@@ -44,7 +44,7 @@ ynh_app_setting_set "$app" filesize "$filesize"
 # download upstream_version version of bozon
 wget -nc --quiet https://github.com/broncowdd/BoZoN/archive/"$upstream_version".zip -P /tmp
 sudo unzip -oq /tmp/"$upstream_version".zip -d /tmp
-sudo mv /tmp/"$upstream_version" "$parent_path"/"$app"
+sudo mv /tmp/BoZoN-"$upstream_version" "$parent_path"/"$app"
 
 # copy files to final folder and set permissions
 sudo find "$final_path" -type f -name ".htaccess" | xargs sudo rm
@@ -119,4 +119,3 @@ fi
 # restart services
 sudo service php5-fpm restart || true
 sudo service nginx restart || true
-sudo yunohost app ssowatconf

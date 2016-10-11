@@ -33,4 +33,3 @@ ynh_package_autoremove "${app}-deps" || true
 # Restart services
 sudo service php5-fpm restart || true
 sudo service nginx restart || true
-sudo yunohost app ssowatconf
