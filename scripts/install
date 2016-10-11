@@ -88,7 +88,7 @@ sudo service nginx reload
 sudo yunohost app ssowatconf
 ## fill the superadmin creation form
 curl_path=$([ "$path" == "/" ] || echo "$path")
-curl -k -X POST \
+sudo curl -k -X POST \
   --data-urlencode creation="1" \
   --data-urlencode login="$admin" \
   --data-urlencode pass="$password" \
