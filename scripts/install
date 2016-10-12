@@ -91,7 +91,7 @@ then
     domainluaregex=$(echo "$domain" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
     pathluaregex=$(echo "$path" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
     # redirect to SSOwat login in
-    ynh_app_setting_delete "$app" unprotected_uris
+    #ynh_app_setting_delete "$app" unprotected_uris
     ynh_app_setting_set "$app" unprotected_regex \
         "${domainluaregex}${pathluaregex}/index.php%?f=.+$", \
         "${domainluaregex}${pathluaregex}/index.php%?zipfolder=.+$", \
