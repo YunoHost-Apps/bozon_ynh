@@ -28,7 +28,8 @@ sudo yunohost app checkurl "${domain}${path}" -a "$app" || ynh_die "The path ${d
 ynh_user_exists "$admin" || ynh_die "The chosen admin user does not exist."
 
 # add required packages
-ynh_package_install_from_equivs ../conf/${app}-deps.control || ynh_die "Unable to install dependencies"
+ynh_package_is_installed "php5-curl" || ynh_package_install "php5-curl"
+ynh_package_is_installed "php5-gd" || ynh_package_install "php5-gd"
 
 # retrieve upstream_version version of bozon
 upstream_version=$(cat ../conf/upstream_version)
