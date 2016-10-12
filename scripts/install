@@ -11,9 +11,10 @@ app=bozon
 domain=$1
 path=${2%/}
 is_public=$3
-filesize=$4
-admin=$5
-password=$6
+language=$4
+filesize=$5
+admin=$6
+password=$7
 
 # definie useful vars
 parent_path=/var/www
@@ -49,6 +50,9 @@ sudo find "$final_path" -type f -name ".htaccess" | xargs sudo rm
 sudo chown -R root: "$final_path"
 sudo find "$final_path" -type f | xargs sudo chmod 644
 sudo find "$final_path" -type d | xargs sudo chmod 755
+
+# configure config file
+sudo sed -i "s@languageuage='en';@languageuage='${language}';@g" "$final_path"/config.php
 
 # create data folders
 sudo mkdir -p "$final_path"/private
@@ -104,13 +108,8 @@ sudo service nginx restart || true
 
 # fill the superadmin creation form
 curl_path=$([ "$path" == "/" ] || echo "$path")
-curl -k -X POST \
-  --data-urlencode creation="1" \
-  --data-urlencode login="$admin" \
-  --data-urlencode pass="$password" \
-  --data-urlencode confirm="$password" \
-  https://"$domain""$curl_path"/index.php?p=login > /dev/null 2>&1
-curl -k -X POST \
+curl https://"$domain""$curl_path"/index.php?p=login > /dev/null 2>&1
+curl -X POST \
   --data-urlencode creation="1" \
   --data-urlencode login="$admin" \
   --data-urlencode pass="$password" \
