@@ -87,7 +87,7 @@ sudo chmod 644 "$phpfpm_conf"
 
 # restart services
 sudo service php5-fpm restart || true
-sudo service nginx restart || true
+sudo service nginx reload || true
 
 # set temporary public access
 ynh_app_setting_set "$app" unprotected_uris "/"
@@ -112,6 +112,5 @@ then
     pathluaregex=$(echo "$path" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
     regexList=${domainluaregex}${pathluaregex}/index.php%?f=.+$","${domainluaregex}${pathluaregex}/index.php%?zipfolder=.+$","${domainluaregex}${pathluaregex}/private/temp/.+%.zip$","${domainluaregex}${pathluaregex}/core/js/.*$","${domainluaregex}${pathluaregex}/templates/.*$"
     ynh_app_setting_set "$app" unprotected_regex "$regexList"
+    sudo yunohost app ssowatconf
 fi
-
-sudo yunohost app ssowatconf
