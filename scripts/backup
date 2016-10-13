@@ -1,31 +1,25 @@
 #! /bin/bash
 
-# causes the shell to exit if any subcommand or pipeline returns a non-zero status
-set -e
-# causes the shell to exit if you try to use an uninitialised variable
-set -u
+# Exit on command errors and treat unset variables as an error
+set -eu
 
-ynh_version=$(sudo yunohost -v | grep "moulinette:" | cut -d' ' -f2 | cut -d'.' -f1,2)
+# Source YunoHost helpers
+source /usr/share/yunohost/helpers
 
 # retrieve arguments
-if [ $ynh_version = "2.4" ]; then
-	app=$YNH_APP_INSTANCE_NAME
-else
-	app=bozon
-fi
-save_path=$1
-domain=$(sudo yunohost app setting $app domain)
+app=$YNH_APP_INSTANCE_NAME
+domain=$(ynh_app_setting_get "$app" domain)
 
 # definie useful vars
 parent_path=/var/www
-final_path=$parent_path/$app
-data_path=/home/yunohost.app/$app
+final_path="$parent_path"/"$app"
+data_path=/home/yunohost.app/"$app"
 
 # backup sources & data
-sudo cp -R $final_path/. $save_path/www/
-sudo cp -R $data_path/. $save_path/datas/
+ynh_backup "$final_path" "www"
+ynh_backup "$data_path" "data"
 
-# backup php-fpm, Nginx and YunoHost parameters
-sudo cp -a /etc/yunohost/apps/$app/. $save_path/yunohost/
-sudo cp -a /etc/nginx/conf.d/$domain.d/$app.conf $save_path/nginx.conf
-sudo cp -a /etc/php5/fpm/pool.d/$app.conf $save_path/php-fpm.conf
+# backup Nginx and php-fpm
+mkdir ./conf
+ynh_backup "/etc/nginx/conf.d/${domain}.d/${app}.conf" "conf/nginx.conf"
+ynh_backup "/etc/php5/fpm/pool.d/${app}.conf" "conf/php-fpm.conf"
