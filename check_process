@@ -1,0 +1,26 @@
+;; Test complet (bozon=sans bdd)
+	auto_remove=1
+	; Manifest
+		domain="domain.tld"
+		path="/path"
+		is_public="Yes"
+		language="en"
+		filesize="2G"
+		admin="john"
+		password="super_secret_password"
+	; Checks
+		setup_sub_dir=1
+		setup_root=1
+		setup_nourl=0
+		setup_private=0
+		setup_public=0
+		upgrade=1
+		backup_restore=1
+		multi_instance=1
+		wrong_user=0
+		wrong_path=0
+		incorrect_path=0
+		corrupt_source=0
+		fail_download_source=0
+		port_already_use=0
+		final_path_already_use=0
