@@ -9,7 +9,7 @@ source /usr/share/yunohost/helpers
 # retrieve arguments
 app=bozon
 domain=$1
-path=${2%/}
+path=$2
 is_public=$3
 language=$4
 filesize=$5
@@ -109,7 +109,7 @@ echo "127.0.0.1 $domain # $app" | sudo tee -a /etc/hosts
 
 # fill the superadmin creation form
 curl_path=$([ "$path" == "/" ] || echo "$path")
-curl https://"$domain""$curl_path"/ > /dev/null 2>&1
+curl -k https://"$domain""$curl_path"/ > /dev/null 2>&1
 sleep 1 && curl -kX POST \
   --data-urlencode creation="1" \
   --data-urlencode login="$admin" \
