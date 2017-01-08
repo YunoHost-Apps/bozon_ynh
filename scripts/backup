@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 # Exit on command errors and treat unset variables as an error
 set -eu

@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 # Exit on command errors and treat unset variables as an error
 set -eu
@@ -9,12 +9,23 @@ source /usr/share/yunohost/helpers
 # retrieve arguments
 app=bozon
 domain=$1
-path=${2%/}
+path=$2
 is_public=$3
 language=$4
 filesize=$5
 admin=$6
 password=$7
+
+
+# chech if / is present at start and not at end
+if [ "${path:0:1}" != "/" ] && [ ${#path} -gt 0 ]; then
+       # first char is not / && path not empty => add / at start
+       path="/$path"
+fi
+if [ "${path:${#path}-1}" == "/" ] && [ ${#path} -gt 1 ]; then
+       # last char is / && path is gretter than /
+       path="${path:0:${#path}-1}"
+fi
 
 # definie useful vars
 parent_path=/var/www
@@ -93,15 +104,21 @@ sudo service nginx reload || true
 ynh_app_setting_set "$app" unprotected_uris "/"
 sudo yunohost app ssowatconf
 
+# add alias line in hosts file
+echo "127.0.0.1 $domain # $app" | sudo tee -a /etc/hosts
+
 # fill the superadmin creation form
 curl_path=$([ "$path" == "/" ] || echo "$path")
-curl https://"$domain""$curl_path"/ > /dev/null 2>&1
-curl -X POST \
+curl -k https://"$domain""$curl_path"/ > /dev/null 2>&1
+sleep 1 && curl -kX POST \
   --data-urlencode creation="1" \
   --data-urlencode login="$admin" \
   --data-urlencode pass="$password" \
   --data-urlencode confirm="$password" \
   https://"$domain""$curl_path"/index.php?p=login > /dev/null 2>&1
+  
+# remove alias line from hosts file
+sudo sed -i "/# $app/d" /etc/hosts
 
 # if app is private, remove url to SSOWat conf from skipped_uris
 if [ "$is_public" = "No" ];
@@ -109,7 +126,7 @@ then
     ynh_app_setting_delete "$app" unprotected_uris
     # escape magic chars in vars (lua magic chars are ().%+-*?[^$ according to https://www.lua.org/pil/20.2.html)
     domainluaregex=$(echo "$domain" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
-    pathluaregex=$(echo "$path" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
+    pathluaregex=$([ "$path" == "/" ] || echo "$path" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
     regexList="${domainluaregex}${pathluaregex}/index.php%?f=.+$","${domainluaregex}${pathluaregex}/index.php%?zipfolder=.+$","${domainluaregex}${pathluaregex}/private/temp/.+%.zip$","${domainluaregex}${pathluaregex}/core/js/.*$","${domainluaregex}${pathluaregex}/templates/.*$"
     ynh_app_setting_set "$app" unprotected_regex "$regexList"
     sudo yunohost app ssowatconf
