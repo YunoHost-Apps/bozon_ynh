@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 # Exit on command errors and treat unset variables as an error
 set -eu
@@ -39,7 +39,8 @@ sudo yunohost app checkurl $domain$path -a $app \
  You should safely delete it before restoring this app."
 
 # add required packages
-ynh_package_install_from_equivs ../conf/${app}-deps.control || ynh_die "Unable to install dependencies"
+ynh_package_is_installed "php5-curl" || ynh_package_install "php5-curl"
+ynh_package_is_installed "php5-gd" || ynh_package_install "php5-gd"
 
 # restore sources & data
 sudo cp -a ./www "$final_path"

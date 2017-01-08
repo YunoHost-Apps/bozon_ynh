@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 # Exit on command errors and treat unset variables as an error
 set -eu
@@ -126,7 +126,7 @@ then
     ynh_app_setting_delete "$app" unprotected_uris
     # escape magic chars in vars (lua magic chars are ().%+-*?[^$ according to https://www.lua.org/pil/20.2.html)
     domainluaregex=$(echo "$domain" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
-    pathluaregex=$(echo "$path" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
+    pathluaregex=$([ "$path" == "/" ] || echo "$path" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
     regexList="${domainluaregex}${pathluaregex}/index.php%?f=.+$","${domainluaregex}${pathluaregex}/index.php%?zipfolder=.+$","${domainluaregex}${pathluaregex}/private/temp/.+%.zip$","${domainluaregex}${pathluaregex}/core/js/.*$","${domainluaregex}${pathluaregex}/templates/.*$"
     ynh_app_setting_set "$app" unprotected_regex "$regexList"
     sudo yunohost app ssowatconf
