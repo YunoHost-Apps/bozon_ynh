@@ -123,11 +123,10 @@ sudo sed -i "/# $app/d" /etc/hosts
 # if app is private, remove url to SSOWat conf from skipped_uris
 if [ "$is_public" = "No" ];
 then
-    ynh_app_setting_delete "$app" unprotected_uris
     # escape magic chars in vars (lua magic chars are ().%+-*?[^$ according to https://www.lua.org/pil/20.2.html)
     domainluaregex=$(echo "$domain" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
     pathluaregex=$([ "$path" == "/" ] || echo "$path" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
-    regexList="${domainluaregex}${pathluaregex}/index.php%?f=.+$","${domainluaregex}${pathluaregex}/index.php%?zipfolder=.+$","${domainluaregex}${pathluaregex}/private/temp/.+%.zip$","${domainluaregex}${pathluaregex}/core/js/.*$","${domainluaregex}${pathluaregex}/templates/.*$"
-    ynh_app_setting_set "$app" unprotected_regex "$regexList"
+    regexList="${domainluaregex}${pathluaregex}/index%.php$","${domainluaregex}${pathluaregex}/index%.php%?p=.*$"
+    ynh_app_setting_set "$app" protected_regex "$regexList"
     sudo yunohost app ssowatconf
 fi
