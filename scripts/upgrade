@@ -78,7 +78,7 @@ sudo find "$final_path" -type f | xargs sudo chmod 0640
 sudo find "$final_path" -type d | xargs sudo chmod 0750
 sudo find "$data_path" -type f | xargs sudo chmod 0640
 sudo find "$data_path" -type d | xargs sudo chmod 0750
-sudo chown -R "$root":"$app" "$final_path"
+sudo chown -R root:"$app" "$final_path"
 sudo chown -R "$app": "$final_path/private"
 sudo chown -R "$app": "$data_path/uploads"
 sudo chown -R "$app": "$data_path/thumbs"
