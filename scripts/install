@@ -54,7 +54,6 @@ ynh_setup_source "$TMPDIR"
 
 # clean & copy files needed to final folder 
 sudo find "$TMPDIR" -type f -name ".htaccess" | xargs sudo rm
-sudo find "$TMPDIR" -type f -name ".htaccess" | xargs sudo rm
 if [ -e "$TMPDIR/.gitignore" ]; then
 	for f in $(sudo cat "$TMPDIR/.gitignore") ; do 
 		[ -e "$TMPDIR$f" ] && sudo rm -R "$TMPDIR$f"
