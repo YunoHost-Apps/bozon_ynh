@@ -1,132 +1,114 @@
 #!/bin/bash
 
-# Exit on command errors and treat unset variables as an error
-set -eu
-
-# Source YunoHost helpers
+source _common.sh
 source /usr/share/yunohost/helpers
+
+# manage script failure
+ynh_abort_if_errors
 
 # retrieve arguments
 app=$YNH_APP_INSTANCE_NAME
 domain=$YNH_APP_ARG_DOMAIN
-path=$YNH_APP_ARG_PATH
+path_url=$YNH_APP_ARG_PATH
 is_public=$YNH_APP_ARG_IS_PUBLIC
 language=$YNH_APP_ARG_LANGUAGE
 filesize=$YNH_APP_ARG_FILESIZE
 admin=$YNH_APP_ARG_ADMIN
 password=$YNH_APP_ARG_PASSWORD
-
-
-# chech if / is present at start and not at end
-if [ "${path:0:1}" != "/" ] && [ ${#path} -gt 0 ]; then
-       # first char is not / && path not empty => add / at start
-       path="/$path"
-fi
-if [ "${path:${#path}-1}" == "/" ] && [ ${#path} -gt 1 ]; then
-       # last char is / && path is gretter than /
-       path="${path:0:${#path}-1}"
-fi
+backup_core_only=$YNH_APP_ARG_BACKUP_CORE_ONLY
 
 # definie useful vars
-parent_path=/var/www
-final_path="$parent_path"/"$app"
-data_path=/home/yunohost.app/"$app"
+final_path="/var/www/$app"
+data_path="/home/yunohost.app/$app"
+bozon_conf="$final_path/config.php"
+nginx_conf="/etc/nginx/conf.d/$domain.d/$app.conf"
+phpfpm_conf="/etc/php5/fpm/pool.d/$app.conf"
 
 # check domain/path availability
-sudo yunohost app checkurl "${domain}${path}" -a "$app" || ynh_die "The path ${domain}${path} is not available for app installation."
+path_url=$(ynh_normalize_url_path "$path_url")
+ynh_webpath_available "$domain" "$path_url"
+ynh_webpath_register "$app" "$domain" "$path_url"
+myynh_check_path "$final_path"
 
 # check that admin user is an existing account
-ynh_user_exists "$admin" || ynh_die "The chosen admin user does not exist."
+ynh_user_exists "$admin"
 
 # add required packages
-ynh_package_is_installed "php5-curl" || ynh_package_install "php5-curl"
-ynh_package_is_installed "php5-gd" || ynh_package_install "php5-gd"
-
-# retrieve upstream_version version of bozon
-upstream_version=$(cat ../conf/upstream_version)
+ynh_install_app_dependencies "$PKG_DEPENDENCIES"
 
 # save app settings
-ynh_app_setting_set "$app" admin_user "$admin"
-ynh_app_setting_set "$app" is_public "$is_public"
 ynh_app_setting_set "$app" domain "$domain"
-ynh_app_setting_set "$app" path "$path"
+ynh_app_setting_set "$app" path "$path_url"
+ynh_app_setting_set "$app" is_public $is_public
 ynh_app_setting_set "$app" filesize "$filesize"
+ynh_app_setting_set "$app" language "$language"
+ynh_app_setting_set "$app" admin_user "$admin"
+ynh_app_setting_set "$app" backup_core_only $backup_core_only
 
-# download upstream_version version of bozon
-wget -nc --quiet https://github.com/broncowdd/BoZoN/archive/"$upstream_version".zip -P /tmp
-sudo unzip -oq /tmp/"$upstream_version".zip -d /tmp
-sudo mv /tmp/BoZoN-"$upstream_version" "$parent_path"/"$app"
+# create a dedicated system user
+ynh_system_user_create "$app"
 
-# copy files to final folder and set permissions
-sudo find "$final_path" -type f -name ".htaccess" | xargs sudo rm
-sudo chown -R root: "$final_path"
-sudo find "$final_path" -type f | xargs sudo chmod 644
-sudo find "$final_path" -type d | xargs sudo chmod 755
+# download & unpack bozon
+TMPDIR=$(mktemp -d)
+ynh_setup_source "$TMPDIR"
+
+# clean & copy files needed to final folder 
+sudo find "$TMPDIR" -type f -name ".htaccess" | xargs sudo rm
+sudo find "$TMPDIR" -type f -name ".htaccess" | xargs sudo rm
+if [ -e "$TMPDIR/.gitignore" ]; then
+	for f in $(sudo cat "$TMPDIR/.gitignore") ; do 
+		[ -e "$TMPDIR$f" ] && sudo rm -R "$TMPDIR$f"
+	done
+	sudo rm "$TMPDIR/.gitignore"
+fi
+sudo mv "$TMPDIR" "$final_path"
 
 # configure config file
-sudo sed -i "s@languageuage='en';@languageuage='${language}';@g" "$final_path"/config.php
+ynh_replace_string "default_language='en'" "default_language='$language'" "$bozon_conf"
+ynh_store_file_checksum "$bozon_conf"
 
-# create data folders
-sudo mkdir -p "$final_path"/private
-sudo mkdir -p "$data_path"/uploads
-sudo ln -s "$data_path"/uploads "$final_path"/uploads
-sudo mkdir -p "$data_path"/thumbs
-sudo ln -s "$data_path"/thumbs "$final_path"/thumbs
-sudo chown -R www-data: "$final_path"/private
-sudo chown -R www-data: "$data_path"/uploads
-sudo chown -R www-data: "$data_path"/thumbs
+# create private & data folders
+myynh_create_dir "$final_path/private"
+myynh_create_dir "$data_path/uploads"
+myynh_create_dir "$data_path/thumbs"
+sudo ln -s "$data_path/uploads" "$final_path/uploads"
+sudo ln -s "$data_path/thumbs" "$final_path/thumbs"
+
+# set permissions
+sudo find "$final_path" -type f | xargs sudo chmod 0640
+sudo find "$final_path" -type d | xargs sudo chmod 0750
+sudo find "$data_path" -type d | xargs sudo chmod 0750
+sudo chown -R "$app": "$final_path/private"
+sudo chown -R "$app": "$data_path/uploads"
+sudo chown -R "$app": "$data_path/thumbs"
 
 # configure nginx settings
-nginx_conf="/etc/nginx/conf.d/${domain}.d/${app}.conf"
-sed -i "s@YNH_EXAMPLE_PATH@${path}@g" ../conf/nginx.conf
-sed -i "s@YNH_EXAMPLE_ALIAS@${final_path}@g" ../conf/nginx.conf
-sed -i "s@YNH_EXAMPLE_APP@${app}@g" ../conf/nginx.conf
-sed -i "s@YNH_FILE_SIZE@${filesize}@g" ../conf/nginx.conf
-sudo cp ../conf/nginx.conf "$nginx_conf"
+myynh_add_nginx_config
 
 # copy and set php-fpm configuration
-postsize=${filesize%?}.1${filesize: -1}
-phpfpm_conf="/etc/php5/fpm/pool.d/${app}.conf"
-sed -i "s@YNH_EXAMPLE_APP@${app}@g" ../conf/php-fpm.conf
-sed -i "s@YNH_EXAMPLE_ALIAS@${final_path}@g" ../conf/php-fpm.conf
-sed -i "s@YNH_FILE_SIZE@${filesize}@g" ../conf/php-fpm.conf
-sed -i "s@YNH_POST_SIZE@${postsize}@g" ../conf/php-fpm.conf
-## copy final and set permissions
-sudo cp ../conf/php-fpm.conf "$phpfpm_conf"
-sudo chown root: "$phpfpm_conf"
-sudo chmod 644 "$phpfpm_conf"
+myynh_add_fpm_config
 
-# restart services
-sudo service php5-fpm restart || true
-sudo service nginx reload || true
-
-# set temporary public access
+# set temporary public access for curl call
 ynh_app_setting_set "$app" unprotected_uris "/"
 sudo yunohost app ssowatconf
 
-# add alias line in hosts file
-echo "127.0.0.1 $domain # $app" | sudo tee -a /etc/hosts
-
-# fill the superadmin creation form
-curl_path=$([ "$path" == "/" ] || echo "$path")
-curl -k https://"$domain""$curl_path"/ > /dev/null 2>&1
-sleep 1 && curl -kX POST \
-  --data-urlencode creation="1" \
-  --data-urlencode login="$admin" \
-  --data-urlencode pass="$password" \
-  --data-urlencode confirm="$password" \
-  https://"$domain""$curl_path"/index.php?p=login > /dev/null 2>&1
-  
-# remove alias line from hosts file
-sudo sed -i "/# $app/d" /etc/hosts
+# fill the superadmin creation form (helper ynh_local_curl doesn't work due to --data vs --data-urlencode ?)
+curl --silent --show-error -kL -H "Host: $domain" --resolve $domain:443:127.0.0.1 https://localhost"$path_url"/ > /dev/null 2>&1
+sleep 1
+curl --silent --show-error -kL -H "Host: $domain" --resolve $domain:443:127.0.0.1 -X POST \
+	--data-urlencode creation="1" \
+	--data-urlencode login="$admin" \
+	--data-urlencode pass="$password" \
+	--data-urlencode confirm="$password" \
+	https://localhost"$path_url"/index.php?p=login > /dev/null 2>&1
 
 # if app is private, remove url to SSOWat conf from skipped_uris
-if [ "$is_public" = "No" ];
+if [ $is_public -eq 0 ]
 then
-    # escape magic chars in vars (lua magic chars are ().%+-*?[^$ according to https://www.lua.org/pil/20.2.html)
-    domainluaregex=$(echo "$domain" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
-    pathluaregex=$([ "$path" == "/" ] || echo "$path" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
-    regexList="${domainluaregex}${pathluaregex}/index%.php$","${domainluaregex}${pathluaregex}/index%.php%?p=.*$"
-    ynh_app_setting_set "$app" protected_regex "$regexList"
-    sudo yunohost app ssowatconf
+	# escape magic chars in vars (lua magic chars are ().%+-*?[^$ according to https://www.lua.org/pil/20.2.html)
+	domainluaregex=$(echo "$domain" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
+	pathluaregex=$([ "$path_url" == "/" ] || echo "$path_url" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
+	regexList="${domainluaregex}${pathluaregex}/index%.php$","${domainluaregex}${pathluaregex}/index%.php%?p=.*$"
+	ynh_app_setting_set "$app" protected_regex "$regexList"
+	sudo yunohost app ssowatconf
 fi

@@ -3,11 +3,12 @@
 	; Manifest
 		domain="domain.tld"	(DOMAIN)
 		path="/path"	(PATH)
-		is_public="Yes"	(PUBLIC|public=Yes|private=No)
+		is_public=1	(PUBLIC)
 		language="en"
 		filesize="2G"
 		admin="john"	(USER)
 		password="super_secret_password"	(PASSWORD)
+		backup_core_only=1
 	; Checks
 		pkg_linter=1
 		setup_sub_dir=1

@@ -8,12 +8,13 @@
     },
     "url": "http://bozon.pw",
     "license": "free",
+    "version": "2.4.18",
     "maintainer": {
         "name": "ewilly",
         "email": "ewilly@neuf.fr"
     },
     "requirements": {
-        "yunohost": ">= 2.4"
+        "yunohost": ">= 2.6.3"
     },
     "multi_instance": false,
     "services": [
@@ -43,12 +44,12 @@
             },
             {
                 "name": "is_public",
+                "type": "boolean",
                 "ask": {
                     "en": "Should this application be public ? (if not, sharing file with unregistered users still work)",
                     "fr": "Est-ce que cette application doit être visible publiquement ? (dans le cas contraire, le partage de fichiers avec des utilisateurs externes fonctionnera tout de même)"
                 },
-                "choices": ["Yes", "No"],
-                "default": "No"
+                "default": false
             },
             {
                 "name": "language",
@@ -84,6 +85,15 @@
                     "fr": "Choisissez un mot de passe administrateur pour BoZoN"
                 },
                 "example": "super_secret_password"
+            },
+            {
+                "name": "backup_core_only",
+                "type": "boolean",
+                "ask": {
+                    "en": "In a case of backup should I only backup the core of the app ? (your uploaded to BoZoN datas as videos, pictures, documents, etc. will not be backuped)",
+                    "fr": "En cas de sauvegarde dois-je seulement sauvegarder le coeur de l'application ? (les fichiers trasnférés dans BoZoN tels que les vidéos, images, documents, etc. ne seront pas sauvegardés)"
+                },
+                "default": true
             }
         ]
     }

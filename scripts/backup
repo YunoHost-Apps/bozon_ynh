@@ -1,25 +1,44 @@
 #!/bin/bash
+# to test the functionnality :
+# yunohost backup create -n "bozon-test" --ignore-system --apps bozon
+# yunohost backup delete bozon-test
 
-# Exit on command errors and treat unset variables as an error
-set -eu
-
-# Source YunoHost helpers
+if [ ! -e _common.sh ]; then
+	# Get the _common.sh file if it's not in the current directory
+	sudo cp ../settings/scripts/_common.sh ./_common.sh
+	sudo chmod a+rx _common.sh
+fi
+source _common.sh
 source /usr/share/yunohost/helpers
+
+# manage script failure
+ynh_abort_if_errors
 
 # retrieve arguments
 app=$YNH_APP_INSTANCE_NAME
 domain=$(ynh_app_setting_get "$app" domain)
 
 # definie useful vars
-parent_path=/var/www
-final_path="$parent_path"/"$app"
-data_path=/home/yunohost.app/"$app"
+final_path="/var/www/$app"
+data_path="/home/yunohost.app/$app"
+nginx_conf="/etc/nginx/conf.d/$domain.d/$app.conf"
+phpfpm_conf="/etc/php5/fpm/pool.d/$app.conf"
 
-# backup sources & data
-ynh_backup "$final_path" "www"
-ynh_backup "$data_path" "data"
+# backup source & conf files
+if [ -e "$final_path" ]; then
+	myynh_check_disk_space "$final_path"
+	ynh_backup "$final_path" "source"
+fi
+[ -e "$nginx_conf" ] && ynh_backup "$nginx_conf" "nginx.conf"
+[ -e "$phpfpm_conf" ] && ynh_backup "$phpfpm_conf" "php-fpm.conf"
 
-# backup Nginx and php-fpm
-mkdir ./conf
-ynh_backup "/etc/nginx/conf.d/${domain}.d/${app}.conf" "conf/nginx.conf"
-ynh_backup "/etc/php5/fpm/pool.d/${app}.conf" "conf/php-fpm.conf"
+# backup data
+if [ -e "$data_path" ]; then
+	backup_core_only=$(ynh_app_setting_get "$app" backup_core_only)
+	if [ $backup_core_only -eq 0 ]; then
+		myynh_check_disk_space "$data_path"
+		ynh_backup "$data_path" "data" 1
+	else
+		echo "Data dir will not be saved, because backup_core_only is set to true." >&2
+	fi
+fi

@@ -1,0 +1,5 @@
+SOURCE_URL=https://github.com/broncowdd/BoZoN/archive/06f2a665f45e3e8f4c4bf71bf4146e8accb27776.zip
+SOURCE_SUM=d82dddd968a8cb31e21d1fb3e0518f4b88d92ec95948d652c0c378fce4dc8e65
+SOURCE_FORMAT=zip
+
+#sha256sum obtain with shasum -a 256 $SOURCE_URL

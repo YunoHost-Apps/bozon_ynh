@@ -1,66 +1,106 @@
 #!/bin/bash
 
-# Exit on command errors and treat unset variables as an error
-set -eu
-
-# Source YunoHost helpers
+source _common.sh
 source /usr/share/yunohost/helpers
+
+# manage script failure
+ynh_abort_if_errors
 
 # retrieve arguments
 app=$YNH_APP_INSTANCE_NAME
 domain=$(ynh_app_setting_get "$app" domain)
-path=$(ynh_app_setting_get "$app" path)
+path_url=$(ynh_app_setting_get "$app" path)
 is_public=$(ynh_app_setting_get "$app" is_public)
 filesize=$(ynh_app_setting_get "$app" filesize)
+language=$(ynh_app_setting_get "$app" language)
+admin_user=$(ynh_app_setting_get "$app" admin_user)
+backup_core_only=$(ynh_app_setting_get "$app" backup_core_only)
 
 # definie useful vars
-parent_path=/var/www
-data_path=/home/yunohost.app/"$app"
-final_path=$parent_path/"$app"
-if [ -z "$filesize" ]
-then	# in old script filesize was not saved as an setting
-	filesize=$(cat /etc/nginx/conf.d/"$domain".d/"$app".conf | grep -Po 'client_max_body_size \K.*(?=;)')
+final_path="/var/www/$app"
+data_path="/home/yunohost.app/$app"
+bozon_conf="$final_path/config.php"
+nginx_conf="/etc/nginx/conf.d/$domain.d/$app.conf"
+phpfpm_conf="/etc/php5/fpm/pool.d/$app.conf"
+
+# use prior backup and restore on error only if backup feature exists on installed instance
+if [ -f "/etc/yunohost/apps/$app/scripts/backup" ] ; then
+  ynh_backup_before_upgrade # Backup the current version of the app
+  ynh_clean_setup () {
+      ynh_backup_after_failed_upgrade
+  }
+fi
+
+# retrieve & save real/right value if argument was not saved as a app setting in a previous realease
+if [ -z "$filesize" ]; then	# in old script filesize was not saved as a setting
+	filesize=$(cat "$nginx_conf" | grep -Po "client_max_body_size \K.*?(?=;)")
 	ynh_app_setting_set "$app" filesize "$filesize"
 fi
-
-# download upstream_version version of bozon
-upstream_version=$(cat ../conf/upstream_version)
-wget -nc --quiet https://github.com/broncowdd/BoZoN/archive/"$upstream_version".zip -P /tmp
-sudo unzip -oq /tmp/"$upstream_version".zip -d /tmp
-sudo rsync -avz --exclude="config.php" --exclude=".htaccess" /tmp/BoZoN-"$upstream_version"/* "$final_path"
-
-# configure nginx settings
-nginx_conf="/etc/nginx/conf.d/${domain}.d/${app}.conf"
-sed -i "s@YNH_EXAMPLE_PATH@${path}@g" ../conf/nginx.conf
-sed -i "s@YNH_EXAMPLE_ALIAS@${final_path}@g" ../conf/nginx.conf
-sed -i "s@YNH_EXAMPLE_APP@${app}@g" ../conf/nginx.conf
-sed -i "s@YNH_FILE_SIZE@${filesize}@g" ../conf/nginx.conf
-sudo cp ../conf/nginx.conf "$nginx_conf"
-
-# copy and set php-fpm configuration
-postsize=${filesize%?}.1${filesize: -1}
-phpfpm_conf="/etc/php5/fpm/pool.d/${app}.conf"
-sed -i "s@YNH_EXAMPLE_APP@${app}@g" ../conf/php-fpm.conf
-sed -i "s@YNH_EXAMPLE_ALIAS@${final_path}@g" ../conf/php-fpm.conf
-sed -i "s@YNH_FILE_SIZE@${filesize}@g" ../conf/php-fpm.conf
-sudo sed -i "s@YNH_POST_SIZE@${postsize}@g" ../conf/php-fpm.conf
-## copy final and set permissions
-sudo cp ../conf/php-fpm.conf "$phpfpm_conf"
-sudo chown root: "$phpfpm_conf"
-sudo chmod 644 "$phpfpm_conf"
-
-# if app is private, remove url to SSOWat conf from skipped_uris
-if [ "$is_public" = "No" ];
-then
-    ynh_app_setting_delete "$app" unprotected_uris
-    # escape magic chars in vars (lua magic chars are ().%+-*?[^$ according to https://www.lua.org/pil/20.2.html)
-    domainluaregex=$(echo "$domain" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
-    pathluaregex=$(echo "$path" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
-    regexList="${domainluaregex}${pathluaregex}/index.php%?f=.+$","${domainluaregex}${pathluaregex}/index.php%?zipfolder=.+$","${domainluaregex}${pathluaregex}/private/temp/.+%.zip$","${domainluaregex}${pathluaregex}/core/js/.*$","${domainluaregex}${pathluaregex}/templates/.*$"
-    ynh_app_setting_set "$app" unprotected_regex "$regexList"
-    sudo yunohost app ssowatconf
+if [ -z "$language" ]; then	# in old script language was not saved as a setting
+	language=$(cat "$bozon_conf" | grep -Po "default_language='\K.*?(?=')")
+	ynh_app_setting_set "$app" language "$language"
+fi
+if [ "$is_public" = "Yes" ]; then   # in old script is_public was not a boolean
+	ynh_app_setting_set "$app" is_public 1
+	is_public=1
+elif [ "$is_public" = "No" ]; then
+	ynh_app_setting_set "$app" is_public 0
+	is_public=0
+fi
+if [ -z "$backup_core_only" ]; then	# in old script backup_core_only was not a setting
+        ynh_app_setting_set "$app" backup_core_only 1
 fi
 
-# Restart services
-sudo service php5-fpm restart || true
-sudo service nginx reload || true
+# add required packages
+ynh_install_app_dependencies "$PKG_DEPENDENCIES"
+
+# create a dedicated system user
+ynh_system_user_create "$app"
+
+# download & unpack bozon
+TMPDIR=$(mktemp -d)
+ynh_setup_source "$TMPDIR"
+
+# clean & copy files needed to final folder 
+sudo find "$TMPDIR" -type f -name ".htaccess" | xargs sudo rm
+if [ -e "$TMPDIR/.gitignore" ]; then
+	for f in $(sudo cat "$TMPDIR/.gitignore") ; do 
+		[ -e "$TMPDIR$f" ] && sudo rm -R "$TMPDIR$f"
+	done
+	sudo rm "$TMPDIR/.gitignore"
+fi
+[ -e "$TMPDIR/config.php" ] && sudo rm "$TMPDIR/config.php"
+sudo cp -a "$TMPDIR/." "$final_path"
+sudo rm -R "$TMPDIR"
+
+# set permissions
+sudo find "$final_path" -type f | xargs sudo chmod 0640
+sudo find "$final_path" -type d | xargs sudo chmod 0750
+sudo find "$data_path" -type f | xargs sudo chmod 0640
+sudo find "$data_path" -type d | xargs sudo chmod 0750
+sudo chown -R "$app": "$final_path/private"
+sudo chown -R "$app": "$data_path/uploads"
+sudo chown -R "$app": "$data_path/thumbs"
+
+# configure nginx settings
+myynh_add_nginx_config
+
+# copy and set php-fpm configuration
+myynh_add_fpm_config
+
+# if app is private, remove url to SSOWat conf from skipped_uris
+if [ $is_public -eq 0 ]
+then
+	ynh_app_setting_delete "$app" unprotected_regex # in old script unprotected_regex was used in place of protected_regex
+	# escape magic chars in vars (lua magic chars are ().%+-*?[^$ according to https://www.lua.org/pil/20.2.html)
+	domainluaregex=$(echo "$domain" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
+	pathluaregex=$([ "$path_url" == "/" ] || echo "$path_url" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
+	regexList="${domainluaregex}${pathluaregex}/index%.php$","${domainluaregex}${pathluaregex}/index%.php%?p=.*$"
+	ynh_app_setting_set "$app" protected_regex "$regexList"
+else
+	ynh_app_setting_set "$app" unprotected_uris "/"
+fi
+sudo yunohost app ssowatconf
+
+# Purge php sessions stored in /var/lib/php5/sessions
+[ -x /usr/lib/php5/sessionclean ] && /usr/lib/php5/sessionclean
