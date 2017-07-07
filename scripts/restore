@@ -29,7 +29,6 @@ phpfpm_conf="/etc/php5/fpm/pool.d/$app.conf"
 
 # check domain/path availability
 ynh_webpath_available "$domain" "$path_url"
-#ynh_webpath_register "$app" "$domain" "$path_url"
 myynh_check_path "$final_path"
 
 # add required packages
@@ -42,25 +41,23 @@ ynh_system_user_create "$app"
 ynh_restore_file "$nginx_conf"
 ynh_restore_file "$phpfpm_conf"
 
-# restore source & their permissions
+# restore source
 ynh_restore_file "$final_path"
-sudo chown -R "$app": "$final_path"
-sudo chmod 755 "$final_path"
 
-# restore data & their permissions only if there is no data
+# restore data only if there is no data
 if [ ! -d "$data_path" ]; then
 	if [ $backup_core_only -eq 0 ]; then
 		ynh_restore_file "$data_path"
-		sudo chown -R "$app": "$data_path"
 	else
 		myynh_create_dir "$data_path/uploads"
-		sudo chown -R "$app": "$data_path/uploads"
 		myynh_create_dir "$data_path/thumbs"
-		sudo chown -R "$app": "$data_path/thumbs"
 	fi
 else
 	echo "$data_path already exists and will not be overwritten" >&2
 fi
+
+# set permissions
+myynh_set_permissions
 
 # restart services
 sudo systemctl reload php5-fpm

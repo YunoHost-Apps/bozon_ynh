@@ -72,6 +72,16 @@ myynh_add_fpm_config () {
 	sudo systemctl reload php5-fpm
 }
 
+myynh_set_permissions () {
+	[ -z $(sudo find "$final_path" -type f) ] && sudo find "$final_path" -type f | xargs sudo chmod 0644
+	[ -z $(sudo find "$final_path" -type d) ] && sudo find "$final_path" -type d | xargs sudo chmod 0755
+	[ -z $(sudo find "$data_path" -type f) ] && sudo find "$data_path" -type f | xargs sudo chmod 0644
+	[ -z $(sudo find "$data_path" -type d) ] && sudo find "$data_path" -type d | xargs sudo chmod 0755
+	sudo chown -R root:"$app" "$final_path"
+	sudo chown -R "$app": "$final_path/private"
+	sudo chown -R "$app": "$data_path/*"
+}
+
 # Remove the dedicated php-fpm config
 myynh_remove_fpm_config () {
 	ynh_secure_remove "$phpfpm_conf"
