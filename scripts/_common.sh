@@ -79,7 +79,8 @@ myynh_set_permissions () {
 	[ $(sudo find "$data_path" -type d | wc -l) -gt 0 ] && sudo find "$data_path" -type d | xargs sudo chmod 0755
 	sudo chown -R root:"$app" "$final_path"
 	sudo chown -R "$app": "$final_path/private"
-	sudo chown -R "$app": "$data_path/*"
+	sudo chown -R "$app": "$data_path"
+	sudo chown root: "$data_path"
 }
 
 # Remove the dedicated php-fpm config
