@@ -73,10 +73,10 @@ myynh_add_fpm_config () {
 }
 
 myynh_set_permissions () {
-	[ -z $(sudo find "$final_path" -type f) ] && sudo find "$final_path" -type f | xargs sudo chmod 0644
-	[ -z $(sudo find "$final_path" -type d) ] && sudo find "$final_path" -type d | xargs sudo chmod 0755
-	[ -z $(sudo find "$data_path" -type f) ] && sudo find "$data_path" -type f | xargs sudo chmod 0644
-	[ -z $(sudo find "$data_path" -type d) ] && sudo find "$data_path" -type d | xargs sudo chmod 0755
+	[ $(sudo find "$final_path" -type f | wc -l) -gt 0 ] && sudo find "$final_path" -type f | xargs sudo chmod 0644
+	[ $(sudo find "$final_path" -type d | wc -l) -gt 0 ] && sudo find "$final_path" -type d | xargs sudo chmod 0755
+	[ $(sudo find "$data_path" -type f | wc -l) -gt 0 ] && sudo find "$data_path" -type f | xargs sudo chmod 0644
+	[ $(sudo find "$data_path" -type d | wc -l) -gt 0 ] && sudo find "$data_path" -type d | xargs sudo chmod 0755
 	sudo chown -R root:"$app" "$final_path"
 	sudo chown -R "$app": "$final_path/private"
 	sudo chown -R "$app": "$data_path/*"
