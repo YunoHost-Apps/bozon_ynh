@@ -25,7 +25,7 @@ backup_core_only=$(ynh_app_setting_get "$app" backup_core_only)
 final_path="/var/www/$app"
 data_path="/home/yunohost.app/$app"
 nginx_conf="/etc/nginx/conf.d/$domain.d/$app.conf"
-phpfpm_conf="/etc/php5/fpm/pool.d/$app}.conf"
+phpfpm_conf="/etc/php5/fpm/pool.d/$app.conf"
 
 # check domain/path availability
 ynh_webpath_available "$domain" "$path_url"
