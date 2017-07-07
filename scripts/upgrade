@@ -74,14 +74,7 @@ sudo cp -a "$TMPDIR/." "$final_path"
 sudo rm -R "$TMPDIR"
 
 # set permissions
-sudo find "$final_path" -type f | xargs sudo chmod 0644
-sudo find "$final_path" -type d | xargs sudo chmod 0755
-sudo find "$data_path" -type f | xargs sudo chmod 0644
-sudo find "$data_path" -type d | xargs sudo chmod 0755
-sudo chown -R root:"$app" "$final_path"
-sudo chown -R "$app": "$final_path/private"
-sudo chown -R "$app": "$data_path/uploads"
-sudo chown -R "$app": "$data_path/thumbs"
+myynh_set_permissions
 
 # configure nginx settings
 myynh_add_nginx_config
