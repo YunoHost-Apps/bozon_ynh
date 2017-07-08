@@ -3,7 +3,7 @@
 	; Manifest
 		domain="domain.tld"	(DOMAIN)
 		path="/path"	(PATH)
-		is_public=1
+		is_public=0
 		language="en"
 		filesize="2G"
 		admin="john"	(USER)
