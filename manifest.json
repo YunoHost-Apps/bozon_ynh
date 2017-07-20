@@ -55,7 +55,7 @@
                 "name": "language",
                 "ask": {
                     "en": "Language (in case of browser language not detected)",
-                    "fr": "Langue (si la langue du naviguatuer n'est détectée)"
+                    "fr": "Langue (si la langue du naviguateur nest détectée)"
                 },
                 "choices": ["de","en","es","fr"],
                 "default": "en"
