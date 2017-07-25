@@ -46,7 +46,7 @@
                 "name": "is_public",
                 "type": "boolean",
                 "ask": {
-                    "en": "Should this application be public ? (if not, sharing file with unregistered users still work)",
+                    "en": "Should this application be public ? (if not, sharing file with unregistered users will still work)",
                     "fr": "Est-ce que cette application doit être visible publiquement ? (dans le cas contraire, le partage de fichiers avec des utilisateurs externes fonctionnera tout de même)"
                 },
                 "default": false
@@ -55,7 +55,7 @@
                 "name": "language",
                 "ask": {
                     "en": "Language (if the browser language is not detected)",
-                    "fr": "Langue (si la langue du naviguateur n'est détectée)"
+                    "fr": "Langue (si la langue du navigateur n'est pas détectée)"
                 },
                 "choices": ["de","en","es","fr"],
                 "default": "en"
@@ -90,8 +90,8 @@
                 "name": "backup_core_only",
                 "type": "boolean",
                 "ask": {
-                    "en": "In a case of backup should I only backup the core of the app ? (your uploaded to BoZoN datas as videos, pictures, documents, etc. will not be backuped)",
-                    "fr": "En cas de sauvegarde dois-je seulement sauvegarder le coeur de l'application ? (les fichiers trasnférés dans BoZoN tels que les vidéos, images, documents, etc. ne seront pas sauvegardés)"
+                    "en": "In a case of backup should I only backup the core of the app ? (your uploaded datas to BoZoN as videos, pictures, documents, etc. will not be backuped)",
+                    "fr": "En cas de sauvegarde dois-je seulement sauvegarder le coeur de l'application ? (les fichiers transférés dans BoZoN tels que les vidéos, images, documents, etc. ne seront pas sauvegardés)"
                 },
                 "default": true
             }
