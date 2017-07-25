@@ -20,6 +20,7 @@ backup_core_only=$(ynh_app_setting_get "$app" backup_core_only)
 final_path="/var/www/$app"
 data_path="/home/yunohost.app/$app"
 bozon_conf="$final_path/config.php"
+bozon_auto_dropzone_php="$final_path/core/auto_dropzone.php"
 nginx_conf="/etc/nginx/conf.d/$domain.d/$app.conf"
 phpfpm_conf="/etc/php5/fpm/pool.d/$app.conf"
 
@@ -72,6 +73,9 @@ fi
 [ -e "$TMPDIR/config.php" ] && sudo rm "$TMPDIR/config.php"
 sudo cp -a "$TMPDIR/." "$final_path"
 sudo rm -R "$TMPDIR"
+
+# update auto_dropzone.php
+myynh_update_bozon_auto_dropzone
 
 # set permissions
 myynh_set_permissions

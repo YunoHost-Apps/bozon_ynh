@@ -89,6 +89,21 @@ myynh_remove_fpm_config () {
 	sudo systemctl restart php5-fpm
 }
 
+# Update the according fo filesize
+myynh_update_bozon_auto_dropzone () {
+	case ${filesize: -1} in
+		g|G)
+			max_length=$((${filesize%?}*1024))
+			;;
+		*)
+			max_length=${filesize%?}
+			;;
+	esac
+	if [ -e "$bozon_auto_dropzone_php" ];then
+		ynh_replace_string "'max_length'=>2048" "'max_length'=>$max_length" "$bozon_auto_dropzone_php"
+	fi
+}
+
 #=================================================
 # FUTURE YUNOHOST HELPERS - TO BE REMOVED LATER
 #=================================================

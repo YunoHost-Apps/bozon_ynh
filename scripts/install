@@ -21,6 +21,7 @@ backup_core_only=$YNH_APP_ARG_BACKUP_CORE_ONLY
 final_path="/var/www/$app"
 data_path="/home/yunohost.app/$app"
 bozon_conf="$final_path/config.php"
+bozon_auto_dropzone_php="$final_path/core/auto_dropzone.php"
 nginx_conf="/etc/nginx/conf.d/$domain.d/$app.conf"
 phpfpm_conf="/etc/php5/fpm/pool.d/$app.conf"
 
@@ -65,6 +66,9 @@ sudo mv "$TMPDIR" "$final_path"
 # configure config file
 ynh_replace_string "default_language='en'" "default_language='$language'" "$bozon_conf"
 ynh_store_file_checksum "$bozon_conf"
+
+# update auto_dropzone.php
+myynh_update_bozon_auto_dropzone
 
 # create private & data folders
 myynh_create_dir "$final_path/private"
