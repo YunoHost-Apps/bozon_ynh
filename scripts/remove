@@ -2,6 +2,7 @@
 # to test the functionnality :
 # yunohost app remove bozon
 
+set -u
 if [ ! -e _common.sh ]; then
 	# Get the _common.sh file if it's not in the current directory
 	sudo cp ../settings/scripts/_common.sh ./_common.sh

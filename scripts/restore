@@ -4,6 +4,7 @@
 # yunohost app remove bozon
 # yunohost backup restore "bozon-test"
 
+set -eu
 if [ ! -e _common.sh ]; then
 	# Fetch helpers file if not in current directory
 	sudo cp ../settings/scripts/_common.sh ./_common.sh
