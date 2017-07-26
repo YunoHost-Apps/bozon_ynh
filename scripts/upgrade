@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -eu
 source _common.sh
 source /usr/share/yunohost/helpers
 
