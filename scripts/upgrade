@@ -75,8 +75,16 @@ fi
 sudo cp -a "$TMPDIR/." "$final_path"
 sudo rm -R "$TMPDIR"
 
-# update auto_dropzone.php
-myynh_update_bozon_auto_dropzone
+# update config.php with 'max_length' line
+case ${filesize: -1} in
+		g|G)
+			max_length=$((${filesize%?}*1024))
+			;;
+		*)
+			max_length=${filesize%?}
+			;;
+	esac
+sed -i "54i\$max_length=$max_length;" "$bozon_conf"
 
 # set permissions
 myynh_set_permissions

@@ -65,11 +65,21 @@ fi
 sudo mv "$TMPDIR" "$final_path"
 
 # configure config file
+ # language 
 ynh_replace_string "default_language='en'" "default_language='$language'" "$bozon_conf"
-ynh_store_file_checksum "$bozon_conf"
+ 
+ # max upload file size
+case ${filesize: -1} in
+		g|G)
+			max_length=$((${filesize%?}*1024))
+			;;
+		*)
+			max_length=${filesize%?}
+			;;
+	esac
+ynh_replace_string "max_length=2048" "max_length=$max_length" "$bozon_conf"
 
-# update auto_dropzone.php
-myynh_update_bozon_auto_dropzone
+ynh_store_file_checksum "$bozon_conf"
 
 # create private & data folders
 myynh_create_dir "$final_path/private"
