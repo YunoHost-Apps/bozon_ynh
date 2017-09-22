@@ -81,7 +81,6 @@ then
 else
 	ynh_app_setting_set "$app" unprotected_uris "/"
 fi
-yunohost app ssowatconf
 
 # Purge php sessions stored in /var/lib/php5/sessions
 [ -x /usr/lib/php5/sessionclean ] && /usr/lib/php5/sessionclean
