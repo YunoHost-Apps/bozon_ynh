@@ -93,6 +93,7 @@ myynh_add_fpm_config
 
 # set temporary public access for curl call
 ynh_app_setting_set "$app" unprotected_uris "/"
+yunohost app ssowatconf
 
 # fill the superadmin creation form (helper ynh_local_curl doesn't work due to --data vs --data-urlencode ?)
 curl --silent --show-error -kL -H "Host: $domain" --resolve $domain:443:127.0.0.1 https://localhost"$path_url"/ > /dev/null 2>&1
