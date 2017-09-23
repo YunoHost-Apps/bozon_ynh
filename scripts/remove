@@ -5,8 +5,8 @@
 set -u
 if [ ! -e _common.sh ]; then
 	# Get the _common.sh file if it's not in the current directory
-	sudo cp ../settings/scripts/_common.sh ./_common.sh
-	sudo chmod a+rx _common.sh
+	cp ../settings/scripts/_common.sh ./_common.sh
+	chmod a+rx _common.sh
 fi
 source _common.sh
 source /usr/share/yunohost/helpers
@@ -25,10 +25,10 @@ nginx_conf="/etc/nginx/conf.d/$domain.d/$app.conf"
 phpfpm_conf="/etc/php5/fpm/pool.d/$app.conf"
 
 # create a full backup (core+datas) if app installed
-if [ $(sudo yunohost app list -i -f "$app" | wc -l) -gt 1 ]; then
+if [ $(yunohost app list -i -f "$app" | wc -l) -gt 1 ]; then
 	ynh_app_setting_set "$app" backup_core_only 0
 	app_bck=${app//_/-}
-	sudo yunohost backup create --ignore-system --apps "$app" --name "${app_bck}_$(date '+%Y%m%d-%H%M%S')"
+	yunohost backup create --ignore-system --apps "$app" --name "${app_bck}_$(date '+%Y%m%d-%H%M%S')"
 	echo "BoZon fully backuped." >&2
 fi
 
@@ -39,10 +39,10 @@ ynh_remove_app_dependencies
 ynh_secure_remove "$final_path"
 
 # remove the dedicated nginx config
-myynh_remove_nginx_config
+ynh_remove_nginx_config
 
 # remove the dedicated php-fpm config
-myynh_remove_fpm_config
+ynh_remove_fpm_config
 
 # remove a directory securely
 ynh_secure_remove "$data_path"

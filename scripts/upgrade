@@ -33,26 +33,6 @@ if [ -f "/etc/yunohost/apps/$app/scripts/backup" ] ; then
   }
 fi
 
-# retrieve & save real/right value if argument was not saved as a app setting in a previous realease
-if [ -z "$filesize" ]; then	# in old script filesize was not saved as a setting
-	filesize=$(cat "$nginx_conf" | grep -Po "client_max_body_size \K.*?(?=;)")
-	ynh_app_setting_set "$app" filesize "$filesize"
-fi
-if [ -z "$language" ]; then	# in old script language was not saved as a setting
-	language=$(cat "$bozon_conf" | grep -Po "default_language='\K.*?(?=')")
-	ynh_app_setting_set "$app" language "$language"
-fi
-if [ "$is_public" = "Yes" ]; then   # in old script is_public was not a boolean
-	ynh_app_setting_set "$app" is_public 1
-	is_public=1
-elif [ "$is_public" = "No" ]; then
-	ynh_app_setting_set "$app" is_public 0
-	is_public=0
-fi
-if [ -z "$backup_core_only" ]; then	# in old script backup_core_only was not a setting
-        ynh_app_setting_set "$app" backup_core_only 1
-fi
-
 # add required packages
 ynh_install_app_dependencies "$PKG_DEPENDENCIES"
 
@@ -64,19 +44,23 @@ TMPDIR=$(mktemp -d)
 ynh_setup_source "$TMPDIR"
 
 # clean & copy files needed to final folder 
-sudo find "$TMPDIR" -type f -name ".htaccess" | xargs sudo rm
-if [ -e "$TMPDIR/.gitignore" ]; then
-	for f in $(sudo cat "$TMPDIR/.gitignore") ; do 
-		[ -e "$TMPDIR$f" ] && sudo rm -R "$TMPDIR$f"
-	done
-	sudo rm "$TMPDIR/.gitignore"
-fi
-[ -e "$TMPDIR/config.php" ] && sudo rm "$TMPDIR/config.php"
-sudo cp -a "$TMPDIR/." "$final_path"
-sudo rm -R "$TMPDIR"
+myynh_clean_source
+[ -e "$TMPDIR/config.php" ] && rm "$TMPDIR/config.php"
+cp -a "$TMPDIR/." "$final_path"
+rm -R "$TMPDIR"
 
-# update auto_dropzone.php
-myynh_update_bozon_auto_dropzone
+# Only add 'max_length' line in config.php if does not exist yet
+if [ $(grep "max_length=" "$bozon_conf" | wc -l) -eq 0 ]; then
+	case ${filesize: -1} in
+		g|G)
+			max_length=$((${filesize%?}*1024))
+			;;
+		*)
+			max_length=${filesize%?}
+			;;
+	esac
+	sed -i "54i\$max_length=$max_length;" "$bozon_conf"
+fi
 
 # set permissions
 myynh_set_permissions
@@ -99,7 +83,6 @@ then
 else
 	ynh_app_setting_set "$app" unprotected_uris "/"
 fi
-sudo yunohost app ssowatconf
 
 # Purge php sessions stored in /var/lib/php5/sessions
 [ -x /usr/lib/php5/sessionclean ] && /usr/lib/php5/sessionclean

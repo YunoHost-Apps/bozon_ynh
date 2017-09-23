@@ -30,6 +30,12 @@ myynh_check_disk_space () {
 	fi
 }
 
+# Clean & copy files needed to final folder
+myynh_clean_source () {
+	find "$TMPDIR" -type f -name ".htaccess" | xargs rm
+	[ -e "$TMPDIR/.gitignore" ] && rm -r "$TMPDIR/.gitignore"
+}
+
 # Create a dedicated nginx config
 myynh_add_nginx_config () {
 	ynh_backup_if_checksum_is_different "$nginx_conf" 1
@@ -49,12 +55,6 @@ myynh_add_nginx_config () {
 		ynh_replace_string "__FILESIZE__" "$filesize" "$nginx_conf"
 	fi
 	ynh_store_file_checksum "$nginx_conf"
-	sudo systemctl reload nginx
-}
-
-# Remove the dedicated nginx config
-myynh_remove_nginx_config () {
-	ynh_secure_remove "$nginx_conf"
 	sudo systemctl reload nginx
 }
 
@@ -81,66 +81,4 @@ myynh_set_permissions () {
 	sudo chown -R "$app": "$final_path/private"
 	sudo chown -R "$app": "$data_path"
 	sudo chown root: "$data_path"
-}
-
-# Remove the dedicated php-fpm config
-myynh_remove_fpm_config () {
-	ynh_secure_remove "$phpfpm_conf"
-	sudo systemctl restart php5-fpm
-}
-
-# Update the according fo filesize
-myynh_update_bozon_auto_dropzone () {
-	case ${filesize: -1} in
-		g|G)
-			max_length=$((${filesize%?}*1024))
-			;;
-		*)
-			max_length=${filesize%?}
-			;;
-	esac
-	if [ -e "$bozon_auto_dropzone_php" ];then
-		ynh_replace_string "'max_length'=>2048" "'max_length'=>$max_length" "$bozon_auto_dropzone_php"
-	fi
-}
-
-#=================================================
-# FUTURE YUNOHOST HELPERS - TO BE REMOVED LATER
-#=================================================
-# Restore a previous backup if the upgrade process failed
-ynh_backup_after_failed_upgrade () {
-	echo "Upgrade failed." >&2
-	app_bck=${app//_/-}	# Replace all '_' by '-'
-	# Check if a existing backup can be found before remove and restore the application.
-	if sudo yunohost backup list | grep -q $app_bck-upg$backup_number; then
-		# Remove the application then restore it
-		sudo yunohost app remove $app
-		# Restore the backup if the upgrade failed
-		sudo yunohost backup restore --ignore-system $app_bck-upg$backup_number --apps $app --force
-		ynh_die "The app was restored to the way it was before the failed upgrade."
-	fi
-}
-
-# Make a backup in case of failed upgrade
-ynh_backup_before_upgrade () {
-	backup_number=1
-	old_backup_number=2
-	app_bck=${app//_/-}	# Replace all '_' by '-'
-	# Check if a backup already exist with the prefix 1.
-	if sudo yunohost backup list | grep -q $app_bck-upg1; then
-		# Prefix become 2 to preserve the previous backup
-		backup_number=2
-		old_backup_number=1
-	fi
-	# Create another backup
-	sudo yunohost backup create --ignore-system --apps $app --name $app_bck-upg$backup_number
-	if [ "$?" -eq 0 ]; then
-		# If the backup succedded, remove the previous backup
-		if sudo yunohost backup list | grep -q $app_bck-upg$old_backup_number; then
-			# Remove the previous backup only if it exists
-			sudo yunohost backup delete $app_bck-upg$old_backup_number > /dev/null
-		fi
-	else
-		ynh_die "Backup failed, the upgrade process was aborted."
-	fi
 }
