@@ -49,8 +49,9 @@ myynh_clean_source
 cp -a "$TMPDIR/." "$final_path"
 rm -R "$TMPDIR"
 
-# update config.php with 'max_length' line
-case ${filesize: -1} in
+# Only add 'max_length' line in config.php if does not exist yet
+if [ $(grep "max_length=" "$bozon_conf" | wc -l) -eq 0 ]; then
+	case ${filesize: -1} in
 		g|G)
 			max_length=$((${filesize%?}*1024))
 			;;
@@ -58,7 +59,8 @@ case ${filesize: -1} in
 			max_length=${filesize%?}
 			;;
 	esac
-sed -i "54i\$max_length=$max_length;" "$bozon_conf"
+	sed -i "54i\$max_length=$max_length;" "$bozon_conf"
+fi
 
 # set permissions
 myynh_set_permissions
