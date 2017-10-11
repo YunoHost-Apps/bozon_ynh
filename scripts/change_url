@@ -1,0 +1,50 @@
+#!/bin/bash
+
+set -eu
+source _common.sh
+source /usr/share/yunohost/helpers
+
+# manage script failure
+ynh_abort_if_errors
+
+# retrieve arguments
+app=$YNH_APP_INSTANCE_NAME
+domain_old=$YNH_APP_OLD_DOMAIN
+domain_new=$YNH_APP_NEW_DOMAIN
+path_url_old=$YNH_APP_OLD_PATH
+path_url_new=$YNH_APP_NEW_PATH
+
+# check the syntax
+[ -n "$path_url_old" ] || path_url_old="/"
+[ -n "$path_url_new" ] || path_url_new="/"
+path_url_new=$(ynh_normalize_url_path "$path_url_new")
+path_url_old=$(ynh_normalize_url_path "$path_url_old")
+
+# definie useful vars
+nginx_conf_old="/etc/nginx/conf.d/$domain_old.d/$app.conf"
+nginx_conf_new="/etc/nginx/conf.d/$domain_new.d/$app.conf"
+change_domain=0
+change_path_url=0
+
+# check what should be changed
+[ "$domain_old" != "$domain_new" ] && change_domain=1
+[ "$path_url_old" != "$path_url_new" ] && change_path_url=1
+
+# change the path in the nginx config file
+if [ $change_path_url -eq 1 ]
+then
+	ynh_backup_if_checksum_is_different "$nginx_conf_old"
+	ynh_replace_string "location\( \(=\|~\|~\*\|\^~\)\)\? $path_url_old" "location\1 $path_url_new" "$nginx_conf_old"
+	ynh_replace_string "return \([[:digit:]]\{3\}\) $path_url_old" "return \1 $path_url_new" "$nginx_conf_old"
+	ynh_store_file_checksum "$nginx_conf_old"
+fi
+
+# change the domain for nginx
+if [ $change_domain -eq 1 ]
+then
+	ynh_delete_file_checksum "$nginx_conf_old"
+	mv $nginx_conf_old "$nginx_conf_new"
+	ynh_store_file_checksum "$nginx_conf_new"
+fi
+
+systemctl reload nginx
