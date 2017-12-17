@@ -7,7 +7,7 @@
         "fr": "Application minimaliste de partage de fichiers"
     },
     "url": "http://bozon.pw",
-    "license": "free",
+    "license": "AGPL-3.0",
     "version": "2.4.18",
     "maintainer": {
         "name": "ewilly",
