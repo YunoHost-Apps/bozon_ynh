@@ -29,7 +29,7 @@ phpfpm_conf="/etc/php5/fpm/pool.d/$app.conf"
 if [ -f "/etc/yunohost/apps/$app/scripts/backup" ] ; then
   ynh_backup_before_upgrade # Backup the current version of the app
   ynh_clean_setup () {
-      ynh_backup_after_failed_upgrade
+      ynh_restore_upgradebackup
   }
 fi
 
