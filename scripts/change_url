@@ -16,9 +16,9 @@ path_url_new=$YNH_APP_NEW_PATH
 
 # check the syntax
 [ -n "$path_url_old" ] || path_url_old="/"
+path_url_old=$(ynh_normalize_url_path "$path_url_old")
 [ -n "$path_url_new" ] || path_url_new="/"
 path_url_new=$(ynh_normalize_url_path "$path_url_new")
-path_url_old=$(ynh_normalize_url_path "$path_url_old")
 
 # definie useful vars
 nginx_conf_old="/etc/nginx/conf.d/$domain_old.d/$app.conf"
@@ -34,8 +34,21 @@ change_path_url=0
 if [ $change_path_url -eq 1 ]
 then
 	ynh_backup_if_checksum_is_different "$nginx_conf_old"
-	ynh_replace_string "location\( \(=\|~\|~\*\|\^~\)\)\? $path_url_old" "location\1 $path_url_new" "$nginx_conf_old"
-	ynh_replace_string "return \([[:digit:]]\{3\}\) $path_url_old" "return \1 $path_url_new" "$nginx_conf_old"
+	if [ "$path_url_new" != "/" ]; then
+		if [ "^$path_url_old" != "/" ]; then
+			#$path_url_new != / & $path_url_old != /
+			ynh_replace_string "rewrite ^$path_url_old$ $path_url_old/ permanent;" "rewrite ^$path_url_new$ $path_url_new/ permanent;" "$nginx_conf_old"
+			ynh_replace_string "location\( \(=\|~\|~\*\|\^~\)\)\? $path_url_old" "location\1 $path_url_new" "$nginx_conf_old"
+		else
+			#$path_url_new != / & $path_url_old = /
+			ynh_replace_string "#sub_path_only rewrite ^__PATH__$ __PATH__/ permanent;" "rewrite ^$path_url_old$ $path_url_old/ permanent;" "$nginx_conf_old"
+			ynh_replace_string "location\( \(=\|~\|~\*\|\^~\)\)\? $path_url_old" "location\1 $path_url_new/" "$nginx_conf_old"
+		fi
+	else
+		#$path_url_new = / => $path_url_old != /
+		ynh_replace_string "rewrite ^$path_url_old$ $path_url_old/ permanent;" "#sub_path_only rewrite ^__PATH__$ __PATH__/ permanent;" "$nginx_conf_old"
+		ynh_replace_string "location\( \(=\|~\|~\*\|\^~\)\)\? $path_url_old/" "location\1 $path_url_new" "$nginx_conf_old"
+	fi
 	ynh_store_file_checksum "$nginx_conf_old"
 fi
 

@@ -46,10 +46,10 @@ myynh_add_nginx_config () {
 	# Substitute in a nginx config file only if the variable is not empty
 	if test -n "${path_url:-}"; then
 		if [ "${path_url:-}" != "/" ]; then
-			ynh_replace_string "^#sub_path_only" "" "$nginx_conf"
+			ynh_replace_string "^#sub_path_only " "" "$nginx_conf"
 			ynh_replace_string "__PATH__" "$path_url" "$nginx_conf"
 		else
-			ynh_replace_string "__PATH__/" "$path_url" "$nginx_conf"
+			ynh_replace_string "location\( \(=\|~\|~\*\|\^~\)\)\? __PATH__/" "location\1 $path_url" "$nginx_conf"
 		fi
 	fi
 	[ -n "${final_path:-}" ] && ynh_replace_string "__FINALPATH__" "$final_path" "$nginx_conf"
