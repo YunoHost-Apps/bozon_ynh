@@ -44,9 +44,13 @@ myynh_add_nginx_config () {
 	cp ../conf/nginx.conf "$nginx_conf"
 	# To avoid a break by set -u, use a void substitution ${var:-}. If the variable is not set, it's simply set with an empty variable.
 	# Substitute in a nginx config file only if the variable is not empty
-	[ -n "${path_url:-}" ] && ynh_replace_string "__PATH__" "$path_url" "$nginx_conf"
-	if [ "${path_url:-}" != "/" ]; then
-		ynh_replace_string "^#sub_path_only" "" "$nginx_conf"
+	if test -n "${path_url:-}"; then
+		if [ "${path_url:-}" != "/" ]; then
+			ynh_replace_string "^#sub_path_only" "" "$nginx_conf"
+			ynh_replace_string "__PATH__" "$path_url" "$nginx_conf"
+		else
+			ynh_replace_string "__PATH__/" "$path_url" "$nginx_conf"
+		fi
 	fi
 	[ -n "${final_path:-}" ] && ynh_replace_string "__FINALPATH__" "$final_path" "$nginx_conf"
 	[ -n "${app:-}" ] && ynh_replace_string "__NAME__" "$app" "$nginx_conf"
