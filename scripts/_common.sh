@@ -25,8 +25,7 @@ myynh_check_disk_space () {
 	file_to_analyse=$1
 	backup_size=$(du --summarize "$1" | cut -f1)
 	free_space=$(df --output=avail "/home/yunohost.backup" | sed 1d)
-	if [ $free_space -le $backup_size ]
-	then
+	if [ $free_space -le $backup_size ]; then
 		WARNING echo "Not enough backup disk space for: $1"
 		WARNING echo "Space available: $(HUMAN_SIZE $free_space)"
 		ynh_die "Space needed: $(HUMAN_SIZE $backup_size)"
@@ -46,13 +45,15 @@ myynh_add_nginx_config () {
 	# To avoid a break by set -u, use a void substitution ${var:-}. If the variable is not set, it's simply set with an empty variable.
 	# Substitute in a nginx config file only if the variable is not empty
 	[ -n "${path_url:-}" ] && ynh_replace_string "__PATH__" "$path_url" "$nginx_conf"
+	if [ "${path_url:-}" != "/" ]; then
+		ynh_replace_string "^#sub_path_only" "" "$nginx_conf"
+	fi
 	[ -n "${final_path:-}" ] && ynh_replace_string "__FINALPATH__" "$final_path" "$nginx_conf"
 	[ -n "${app:-}" ] && ynh_replace_string "__NAME__" "$app" "$nginx_conf"
 	[ -n "${filesize:-}" ] && ynh_replace_string "__FILESIZE__" "$filesize" "$nginx_conf"
 	ynh_store_file_checksum "$nginx_conf"
 	systemctl reload nginx
 }
-
 # Create a dedicated php-fpm config
 myynh_add_fpm_config () {
 	ynh_backup_if_checksum_is_different "$phpfpm_conf" 1
