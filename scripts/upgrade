@@ -47,6 +47,9 @@ rm -R "$TMPDIR"
 myynh_set_permissions
 
 # configure nginx settings
+if [ "$path_url" != "/" ]; then
+	ynh_replace_string "^#sub_path_only" "" "../conf/nginx.conf"
+fi
 ynh_add_nginx_config
 
 # copy and set php-fpm configuration

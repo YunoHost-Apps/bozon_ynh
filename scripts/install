@@ -61,13 +61,8 @@ ln -s "$data_path/thumbs" "$final_path/thumbs"
 myynh_set_permissions
 
 # configure nginx settings
-if test -n "${path_url:-}"; then
-        if [ "${path_url:-}" != "/" ]; then
-                ynh_replace_string "^#sub_path_only " "" "../conf/nginx.conf"
-                ynh_replace_string "__PATH__" "$path_url" "../conf/nginx.conf"
-        else
-                ynh_replace_string "location\( \(=\|~\|~\*\|\^~\)\)\? __PATH__/" "location\1 $path_url" "../conf/nginx.conf"
-        fi
+if [ "$path_url" != "/" ]; then
+	ynh_replace_string "^#sub_path_only" "" "../conf/nginx.conf"
 fi
 ynh_add_nginx_config
 
