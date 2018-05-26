@@ -12,8 +12,6 @@ app=$YNH_APP_INSTANCE_NAME
 domain=$YNH_APP_ARG_DOMAIN
 path_url=$YNH_APP_ARG_PATH
 is_public=$YNH_APP_ARG_IS_PUBLIC
-language=$YNH_APP_ARG_LANGUAGE
-filesize=$YNH_APP_ARG_FILESIZE
 admin=$YNH_APP_ARG_ADMIN
 password=$YNH_APP_ARG_PASSWORD
 backup_core_only=$YNH_APP_ARG_BACKUP_CORE_ONLY
@@ -21,10 +19,6 @@ backup_core_only=$YNH_APP_ARG_BACKUP_CORE_ONLY
 # definie useful vars
 final_path="/var/www/$app"
 data_path="/home/yunohost.app/$app"
-bozon_conf="$final_path/config.php"
-bozon_auto_dropzone_php="$final_path/core/auto_dropzone.php"
-nginx_conf="/etc/nginx/conf.d/$domain.d/$app.conf"
-phpfpm_conf="/etc/php5/fpm/pool.d/$app.conf"
 
 # check domain/path availability
 path_url=$(ynh_normalize_url_path "$path_url")
@@ -42,8 +36,6 @@ ynh_install_app_dependencies "$PKG_DEPENDENCIES"
 ynh_app_setting_set "$app" domain "$domain"
 ynh_app_setting_set "$app" path "$path_url"
 ynh_app_setting_set "$app" is_public $is_public
-ynh_app_setting_set "$app" filesize "$filesize"
-ynh_app_setting_set "$app" language "$language"
 ynh_app_setting_set "$app" admin_user "$admin"
 ynh_app_setting_set "$app" backup_core_only $backup_core_only
 
@@ -58,23 +50,6 @@ ynh_setup_source "$TMPDIR"
 myynh_clean_source
 mv "$TMPDIR" "$final_path"
 
-# configure config file
- # language 
-ynh_replace_string "default_language='en'" "default_language='$language'" "$bozon_conf"
- 
- # max upload file size
-case ${filesize: -1} in
-		g|G)
-			max_length=$((${filesize%?}*1024))
-			;;
-		*)
-			max_length=${filesize%?}
-			;;
-	esac
-ynh_replace_string "max_length=2048" "max_length=$max_length" "$bozon_conf"
-
-ynh_store_file_checksum "$bozon_conf"
-
 # create private & data folders
 myynh_create_dir "$final_path/private"
 myynh_create_dir "$data_path/uploads"
@@ -86,10 +61,18 @@ ln -s "$data_path/thumbs" "$final_path/thumbs"
 myynh_set_permissions
 
 # configure nginx settings
-myynh_add_nginx_config
+if test -n "${path_url:-}"; then
+        if [ "${path_url:-}" != "/" ]; then
+                ynh_replace_string "^#sub_path_only " "" "../conf/nginx.conf"
+                ynh_replace_string "__PATH__" "$path_url" "../conf/nginx.conf"
+        else
+                ynh_replace_string "location\( \(=\|~\|~\*\|\^~\)\)\? __PATH__/" "location\1 $path_url" "../conf/nginx.conf"
+        fi
+fi
+ynh_add_nginx_config
 
 # copy and set php-fpm configuration
-myynh_add_fpm_config
+ynh_add_fpm_config
 
 # set temporary public access for curl call
 ynh_app_setting_set "$app" unprotected_uris "/"

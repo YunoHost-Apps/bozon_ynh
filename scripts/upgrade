@@ -12,18 +12,12 @@ app=$YNH_APP_INSTANCE_NAME
 domain=$(ynh_app_setting_get "$app" domain)
 path_url=$(ynh_app_setting_get "$app" path)
 is_public=$(ynh_app_setting_get "$app" is_public)
-filesize=$(ynh_app_setting_get "$app" filesize)
-language=$(ynh_app_setting_get "$app" language)
 admin_user=$(ynh_app_setting_get "$app" admin_user)
 backup_core_only=$(ynh_app_setting_get "$app" backup_core_only)
 
 # definie useful vars
 final_path="/var/www/$app"
 data_path="/home/yunohost.app/$app"
-bozon_conf="$final_path/config.php"
-bozon_auto_dropzone_php="$final_path/core/auto_dropzone.php"
-nginx_conf="/etc/nginx/conf.d/$domain.d/$app.conf"
-phpfpm_conf="/etc/php5/fpm/pool.d/$app.conf"
 
 # use prior backup and restore on error only if backup feature exists on installed instance
 if [ -f "/etc/yunohost/apps/$app/scripts/backup" ] ; then
@@ -49,27 +43,14 @@ myynh_clean_source
 cp -a "$TMPDIR/." "$final_path"
 rm -R "$TMPDIR"
 
-# Only add 'max_length' line in config.php if does not exist yet
-if [ $(grep "max_length=" "$bozon_conf" | wc -l) -eq 0 ]; then
-	case ${filesize: -1} in
-		g|G)
-			max_length=$((${filesize%?}*1024))
-			;;
-		*)
-			max_length=${filesize%?}
-			;;
-	esac
-	sed -i "54i\$max_length=$max_length;" "$bozon_conf"
-fi
-
 # set permissions
 myynh_set_permissions
 
 # configure nginx settings
-myynh_add_nginx_config
+ynh_add_nginx_config
 
 # copy and set php-fpm configuration
-myynh_add_fpm_config
+ynh_add_fpm_config
 
 # if app is private, remove url to SSOWat conf from skipped_uris
 if [ $is_public -eq 0 ]
@@ -84,5 +65,9 @@ else
 	ynh_app_setting_set "$app" unprotected_uris "/"
 fi
 
-# Purge php sessions stored in /var/lib/php5/sessions
-[ -x /usr/lib/php5/sessionclean ] && /usr/lib/php5/sessionclean
+# Purge php sessions stored in /var/lib/phpx/sessions
+if [ -d "/usr/lib/php5" ]; then
+    [ -x /usr/lib/php5/sessionclean ] && /usr/lib/php5/sessionclean
+elif [ -d "/usr/lib/php" ]; then
+    [ -x /usr/lib/php/sessionclean ] && /usr/lib/php/sessionclean
+fi

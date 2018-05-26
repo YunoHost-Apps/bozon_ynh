@@ -25,8 +25,6 @@ backup_core_only=$(ynh_app_setting_get "$app" backup_core_only)
 # definie useful vars
 final_path="/var/www/$app"
 data_path="/home/yunohost.app/$app"
-nginx_conf="/etc/nginx/conf.d/$domain.d/$app.conf"
-phpfpm_conf="/etc/php5/fpm/pool.d/$app.conf"
 
 # check domain/path availability
 ynh_webpath_available "$domain" "$path_url"
@@ -39,8 +37,8 @@ ynh_install_app_dependencies "$PKG_DEPENDENCIES"
 ynh_system_user_create "$app"
 
 # restore sconf files
-ynh_restore_file "$nginx_conf"
-ynh_restore_file "$phpfpm_conf"
+ynh_restore_file "/etc/nginx/conf.d/$domain.d/$app.conf"
+ynh_restore_file "/etc/php5/fpm/pool.d/$app.conf"
 
 # restore source
 ynh_restore_file "$final_path"

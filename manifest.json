@@ -52,23 +52,6 @@
                 "default": false
             },
             {
-                "name": "language",
-                "ask": {
-                    "en": "Language (if the browser language is not detected)",
-                    "fr": "Langue (si la langue du navigateur n'est pas détectée)"
-                },
-                "choices": ["de","en","es","fr"],
-                "default": "en"
-            },
-            {
-                "name": "filesize",
-                "ask": {
-                    "en": "Define the file upload size limit",
-                    "fr": "Définissez la taille limite de téléchargement"
-                },
-                "default": "2G"
-            },
-            {
                 "name": "admin",
                 "type": "user",
                 "ask": {

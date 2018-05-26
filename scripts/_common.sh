@@ -38,40 +38,6 @@ myynh_clean_source () {
 	[ -e "$TMPDIR/.gitignore" ] && rm -r "$TMPDIR/.gitignore"
 }
 
-# Create a dedicated nginx config
-myynh_add_nginx_config () {
-	ynh_backup_if_checksum_is_different "$nginx_conf" 1
-	cp ../conf/nginx.conf "$nginx_conf"
-	# To avoid a break by set -u, use a void substitution ${var:-}. If the variable is not set, it's simply set with an empty variable.
-	# Substitute in a nginx config file only if the variable is not empty
-	if test -n "${path_url:-}"; then
-		if [ "${path_url:-}" != "/" ]; then
-			ynh_replace_string "^#sub_path_only " "" "$nginx_conf"
-			ynh_replace_string "__PATH__" "$path_url" "$nginx_conf"
-		else
-			ynh_replace_string "location\( \(=\|~\|~\*\|\^~\)\)\? __PATH__/" "location\1 $path_url" "$nginx_conf"
-		fi
-	fi
-	[ -n "${final_path:-}" ] && ynh_replace_string "__FINALPATH__" "$final_path" "$nginx_conf"
-	[ -n "${app:-}" ] && ynh_replace_string "__NAME__" "$app" "$nginx_conf"
-	[ -n "${filesize:-}" ] && ynh_replace_string "__FILESIZE__" "$filesize" "$nginx_conf"
-	ynh_store_file_checksum "$nginx_conf"
-	systemctl reload nginx
-}
-# Create a dedicated php-fpm config
-myynh_add_fpm_config () {
-	ynh_backup_if_checksum_is_different "$phpfpm_conf" 1
-	cp ../conf/php-fpm.conf "$phpfpm_conf"
-	postsize=${filesize%?}.1${filesize: -1}
-	ynh_replace_string "__FINALPATH__" "$final_path" "$phpfpm_conf"
-	ynh_replace_string "__NAME__" "$app" "$phpfpm_conf"
-	ynh_replace_string "__FILESIZE__" "$filesize" "$phpfpm_conf"
-	ynh_replace_string "__POSTSIZE__" "$postsize" "$phpfpm_conf"
-	chown root: "$phpfpm_conf"
-	ynh_store_file_checksum "$phpfpm_conf"
-	systemctl reload php5-fpm
-}
-
 myynh_set_permissions () {
 	[ $(find "$final_path" -type f | wc -l) -gt 0 ] && find "$final_path" -type f | xargs chmod 0644
 	[ $(find "$final_path" -type d | wc -l) -gt 0 ] && find "$final_path" -type d | xargs chmod 0755
