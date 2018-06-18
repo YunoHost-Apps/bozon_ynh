@@ -4,9 +4,9 @@
 
 # Package dependencies
 if [ "$(lsb_release --codename --short)" != "jessie" ]; then
-	PKG_DEPENDENCIES="$PKG_DEPENDENCIES php-zip php-curl php-gd"
+	PKG_DEPENDENCIES="php-zip php-curl php-gd"
 else
-	PKG_DEPENDENCIES="$PKG_DEPENDENCIES php5-curl php5-gd"
+	PKG_DEPENDENCIES="php5-curl php5-gd"
 fi
 
 # Check if directory/file already exists (path in argument)
