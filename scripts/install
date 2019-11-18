@@ -75,9 +75,7 @@ yunohost app ssowatconf
 
 # fill the superadmin creation form (helper ynh_local_curl doesn't work due to --data vs --data-urlencode ?)
 admin_url="/index.php?p=login"
-myynh_local_curl $admin_url
-sleep 1
-myynh_local_curl $admin_url "creation=1" "login=$admin" "pass=$password" "confirm=$password"
+ynh_local_curl $admin_url "creation=1" "login=$admin" "pass=$password" "confirm=$password"
 
 # if app is private, remove url to SSOWat conf from skipped_uris
 if [ $is_public -eq 0 ]
