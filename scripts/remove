@@ -26,7 +26,7 @@ data_path="/home/yunohost.app/$app"
 if [ $(yunohost app list -i -f "$app" | wc -l) -gt 1 ]; then
 	ynh_app_setting_set "$app" backup_core_only 0
 	app_bck=${app//_/-}
-	yunohost backup create --apps "$app" --name "${app_bck}_$(date '+%Y%m%d-%H%M%S')"
+	yunohost backup create --ignore-system --apps "$app" --name "${app_bck}_$(date '+%Y%m%d-%H%M%S')"
 	echo "BoZon fully backuped." >&2
 fi
 
