@@ -46,34 +46,18 @@ myynh_set_permissions () {
 	chown root: "$data_path"
 }
 
-#Change --data to --data-urlencode
-myynh_local_curl () {
-    # Define url of page to curl
-    local local_page=$(ynh_normalize_url_path $1)
-    local full_path=$path_url$local_page
-
-    if [ "${path_url}" == "/" ]; then
-        full_path=$local_page
-    fi
-
-    local full_page_url=https://localhost$full_path
-
-    # Concatenate all other arguments with '&' to prepare POST data
-    local POST_data=""
-    local arg=""
-    for arg in "${@:2}"
-    do
-        POST_data="${POST_data}${arg}&"
-    done
-    if [ -n "$POST_data" ]
-    then
-        # Add --data-urlencode arg and remove the last character, which is an unecessary '&'
-        POST_data="--data-urlencode ${POST_data::-1}"
-    fi
-
-    # Wait untils nginx has fully reloaded (avoid curl fail with http2)
-    sleep 2
-
-    # Curl the URL
-    curl --silent --show-error -kL -H "Host: $domain" --resolve $domain:443:127.0.0.1 $POST_data "$full_page_url"
+#Convert --data to --data-urlencode before ynh_local_curl
+urlencode() {
+	local data
+	if [[ $# != 1 ]]; then
+		echo "Usage: $0 string-to-urlencode"
+		return 1
+	fi
+	data="$(curl -s -o /dev/null -w %{url_effective} --get --data-urlencode "$1" "")"
+	if [[ $? != 3 ]]; then
+		echo "Unexpected error" 1>&2
+		return 2
+	fi
+	echo "${data##/?}"
+	return 0
 }
