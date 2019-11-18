@@ -1,6 +1,6 @@
 #!/bin/bash
 # to test the functionnality :
-# yunohost backup create -n "bozon-test" --ignore-system --apps bozon
+# yunohost backup create -n "bozon-test" --apps bozon
 # yunohost app remove bozon
 # yunohost backup restore "bozon-test"
 
