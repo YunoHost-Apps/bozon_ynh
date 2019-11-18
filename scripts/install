@@ -74,14 +74,8 @@ ynh_app_setting_set "$app" unprotected_uris "/"
 yunohost app ssowatconf
 
 # fill the superadmin creation form (helper ynh_local_curl doesn't work due to --data vs --data-urlencode ?)
-curl --silent --show-error -kL -H "Host: $domain" --resolve $domain:443:127.0.0.1 https://localhost"$path_url"/ > /dev/null 2>&1
-sleep 1
-curl --silent --show-error -kL -H "Host: $domain" --resolve $domain:443:127.0.0.1 -X POST \
-	--data-urlencode creation="1" \
-	--data-urlencode login="$admin" \
-	--data-urlencode pass="$password" \
-	--data-urlencode confirm="$password" \
-	https://localhost"$path_url"/index.php?p=login > /dev/null 2>&1
+admin_url="/index.php?p=login"
+myynh_local_curl $admin_url "creation=1" "login=$admin" "pass=$password" "confirm=$password"
 
 # if app is private, remove url to SSOWat conf from skipped_uris
 if [ $is_public -eq 0 ]
