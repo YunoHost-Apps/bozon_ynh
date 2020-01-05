@@ -2,48 +2,74 @@
 # to test the functionnality :
 # yunohost app remove bozon
 
-set -u
-if [ ! -e _common.sh ]; then
-	# Get the _common.sh file if it's not in the current directory
-	cp ../settings/scripts/_common.sh ./_common.sh
-	chmod a+rx _common.sh
-fi
+#=================================================
+# GENERIC START
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
 source _common.sh
 source /usr/share/yunohost/helpers
 
-# manage script failure
-set -u
-
-# retrieve arguments
+#=================================================
+# LOAD SETTINGS
+#=================================================
+ynh_script_progression --message="Loading installation settings..." --time --weight=1
 app=$YNH_APP_INSTANCE_NAME
-domain=$(ynh_app_setting_get "$app" domain)
+domain=$(ynh_app_setting_get --app="$app" --key=domain)
+final_path=$(ynh_app_setting_get --app="$app" --key=final_path)
+data_path=$(ynh_app_setting_get --app="$app" --key=data_path)
 
-# definie useful vars
-final_path="/var/www/$app"
-data_path="/home/yunohost.app/$app"
-
-# create a full backup (core+datas) if app installed
+#=================================================
+# BACKUP OF APP AND DATAS
+#=================================================
+ynh_script_progression --message="Backing up app and datas..." --time --weight=3
 if [ $(yunohost app list -i -f "$app" | wc -l) -gt 1 ]; then
-	ynh_app_setting_set "$app" backup_core_only 0
+	ynh_app_setting_set --app="$app" --key=backup_core_only --value=0
 	app_bck=${app//_/-}
 	yunohost backup create --apps "$app" --name "${app_bck}_$(date '+%Y%m%d-%H%M%S')"
 	echo "BoZon fully backuped." >&2
 fi
 
-# remove metapackage and its dependencies
+#=================================================
+# STANDARD REMOVE
+#=================================================
+# REMOVE DEPENDENCIES
+#=================================================
+ynh_script_progression --message="Removing dependencies..." --time --weight=1
 ynh_remove_app_dependencies
 
-# remove the app directory securely
-ynh_secure_remove "$final_path"
+#=================================================
+# REMOVE APP MAIN DIR
+#=================================================
+ynh_script_progression --message="Removing app main directory..." --time --weight=1
+ynh_secure_remove --file="$final_path"
 
-# remove the dedicated nginx config
+#=================================================
+# REMOVE NGINX CONFIGURATION
+#=================================================
+ynh_script_progression --message="Removing nginx web server configuration..." --time --weight=1
 ynh_remove_nginx_config
 
-# remove the dedicated php-fpm config
+#=================================================
+# REMOVE PHP-FPM CONFIGURATION
+#=================================================
+ynh_script_progression --message="Removing php-fpm configuration..." --time --weight=1
 ynh_remove_fpm_config
 
-# remove a directory securely
-ynh_secure_remove "$data_path"
+#=================================================
+# SPECIFIC REMOVE
+#=================================================
+ynh_secure_remove --file="$data_path"
 
-# delete a system user
-ynh_system_user_delete "$app"
+#=================================================
+# GENERIC FINALIZATION
+#=================================================
+# REMOVE DEDICATED USER
+#=================================================
+ynh_script_progression --message="Removing the dedicated system user..." --time --weight=1
+ynh_system_user_delete --username="$app"
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+ynh_script_progression --message="Removal of $app completed" --time --last

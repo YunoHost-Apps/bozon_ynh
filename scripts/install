@@ -1,13 +1,23 @@
 #!/bin/bash
 
-set -eu
+#=================================================
+# GENERIC START
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
+
 source _common.sh
 source /usr/share/yunohost/helpers
 
-# manage script failure
+#=================================================
+# MANAGE SCRIPT FAILURE
+#=================================================
+# Exit if an error occurs during the execution of the script
 ynh_abort_if_errors
 
-# retrieve arguments
+#=================================================
+# RETRIEVE ARGUMENTS FROM THE MANIFEST
+#=================================================
 app=$YNH_APP_INSTANCE_NAME
 domain=$YNH_APP_ARG_DOMAIN
 path_url=$YNH_APP_ARG_PATH
@@ -19,72 +29,119 @@ backup_core_only=$YNH_APP_ARG_BACKUP_CORE_ONLY
 # definie useful vars
 final_path="/var/www/$app"
 data_path="/home/yunohost.app/$app"
+path_url=$(ynh_normalize_url_path --path_url="$path_url")
 
-# check domain/path availability
-path_url=$(ynh_normalize_url_path "$path_url")
-ynh_webpath_available "$domain" "$path_url"
-ynh_webpath_register "$app" "$domain" "$path_url"
-myynh_check_path "$final_path"
+#=================================================
+# CHECK IF THE APP CAN BE INSTALLED WITH THESE ARGS
+#=================================================
+ynh_script_progression --message="Validating installation parameters..."
+## check domain/path availability
+test ! -e "$final_path" || ynh_die --message="This path already contains a folder"
+## register (book) web path
+ynh_webpath_register --app="$app" --domain="$domain" --path_url="$path_url"
+## check that admin user is an existing account
+ynh_user_exists --username="$admin"
 
-# check that admin user is an existing account
-ynh_user_exists "$admin"
+#=================================================
+# STORE SETTINGS FROM MANIFEST
+#=================================================
+ynh_script_progression --message="Storing installation settings..."
+ynh_app_setting_set --app="$app" --key=domain --value="$domain"
+ynh_app_setting_set --app="$app" --key=path --value="$path_url"
+ynh_app_setting_set --app="$app" --key=is_public --value=$is_public
+ynh_app_setting_set --app="$app" --key=admin_user --value="$admin"
+ynh_app_setting_set --app="$app" --key=backup_core_only --value=$backup_core_only
+ynh_app_setting_set --app="$app" --key=final_path --value="$final_path"
+ynh_app_setting_set --app="$app" --key=data_path --value="$data_path"
 
-# add required packages
-ynh_install_app_dependencies "$PKG_DEPENDENCIES"
+#=================================================
+# STANDARD MODIFICATIONS
+#=================================================
+# INSTALL DEPENDENCIES
+#=================================================
+ynh_script_progression --message="Installing dependencies..." --weight=3
+ynh_install_app_dependencies "$pkg_dependencies"
 
-# save app settings
-ynh_app_setting_set "$app" domain "$domain"
-ynh_app_setting_set "$app" path "$path_url"
-ynh_app_setting_set "$app" is_public $is_public
-ynh_app_setting_set "$app" admin_user "$admin"
-ynh_app_setting_set "$app" backup_core_only $backup_core_only
+#=================================================
+# CREATE DEDICATED USER
+#=================================================
+ynh_script_progression --message="Configuring system user..."
+ynh_system_user_create --username="$app"
 
-# create a dedicated system user
-ynh_system_user_create "$app"
-
-# download & unpack bozon
-TMPDIR=$(mktemp -d)
-ynh_setup_source "$TMPDIR"
-
-# clean & copy files needed to final folder 
+#=================================================
+# DOWNLOAD, CHECK AND UNPACK SOURCE
+#=================================================
+ynh_script_progression --message="Setting up source files..." --weight=3
+## download source 
+tmpdir=$(mktemp -d)
+ynh_setup_source --dest_dir="$tmpdir"
+## clean & copy files needed to final folder 
 myynh_clean_source
-mv "$TMPDIR" "$final_path"
-
-# create private & data folders
+mv "$tmpdir" "$final_path"
+## create private & data folders
 myynh_create_dir "$final_path/private"
 myynh_create_dir "$data_path/uploads"
 myynh_create_dir "$data_path/thumbs"
 ln -s "$data_path/uploads" "$final_path/uploads"
 ln -s "$data_path/thumbs" "$final_path/thumbs"
-
-# set permissions
+## set permissions
 myynh_set_permissions
 
-# configure nginx settings
+#=================================================
+# NGINX CONFIGURATION
+#=================================================
+ynh_script_progression --message="Configuring nginx web server..."
 if [ "$path_url" != "/" ]; then
-	ynh_replace_string "^#sub_path_only" "" "../conf/nginx.conf"
+	ynh_replace_string --match_string="^#sub_path_only" --replace_string="" --target_file="../conf/nginx.conf"
 fi
 ynh_add_nginx_config
 
-# copy and set php-fpm configuration
+#=================================================
+# PHP-FPM CONFIGURATION
+#=================================================
+ynh_script_progression --message="Configuring php-fpm..."
 ynh_add_fpm_config
 
-# set temporary public access for curl call
-ynh_app_setting_set "$app" unprotected_uris "/"
+#=================================================
+# SETUP APPLICATION WITH CURL
+#=================================================
+# create admin user in bozon
+ynh_script_progression --message="Configuring admin user in BoZon..." --weight=2
+## set the app as temporarily public for curl call
+ynh_app_setting_set --app="$app" --key=unprotected_uris --value="/"
+## reload SSOwat config
 yunohost app ssowatconf
-
-# fill the superadmin creation form (helper ynh_local_curl doesn't work due to --data vs --data-urlencode ?)
+## reload Nginx
+ynh_systemd_action --service_name=nginx --action=reload
+## fill the superadmin creation form (helper ynh_local_curl doesn't work due to --data vs --data-urlencode ?)
 admin_url="/index.php?p=login"
-admin=$(urlencode $admin)
-password=$(urlencode $password)
-ynh_local_curl $admin_url "creation=1" "login=$admin" "pass=$password" "confirm=$password"
+admin=$(myynh_urlencode $admin)
+ynh_print_OFF
+	password=$(myynh_urlencode $password)
+	ynh_local_curl $admin_url "creation=1" "login=$admin" "pass=$password" "confirm=$password"
+ynh_print_ON
 
-# if app is private, remove url to SSOWat conf from skipped_uris
-if [ $is_public -eq 0 ]
-then
+#=================================================
+# GENERIC FINALIZATION
+#=================================================
+# SETUP SSOWAT
+#=================================================
+ynh_script_progression --message="Configuring SSOwat..."
+if [ $is_public -eq 0 ]; then
 	# escape magic chars in vars (lua magic chars are ().%+-*?[^$ according to https://www.lua.org/pil/20.2.html)
 	domainluaregex=$(echo "$domain" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
 	pathluaregex=$([ "$path_url" == "/" ] || echo "$path_url" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
 	regexList="${domainluaregex}${pathluaregex}/index%.php$","${domainluaregex}${pathluaregex}/index%.php%?p=.*$"
-	ynh_app_setting_set "$app" protected_regex "$regexList"
+	ynh_app_setting_set --app="$app" --key=protected_regex --value="$regexList"
 fi
+
+#=================================================
+# RELOAD NGINX
+#=================================================
+ynh_script_progression --message="Reloading nginx web server..."
+ynh_systemd_action --service_name=nginx --action=reload
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+ynh_script_progression --message="Installation of $app completed" --last
