@@ -1,19 +1,24 @@
-#
-# Common variables & functions
-#
+#!/bin/bash
 
-# Package dependencies
-PKG_DEPENDENCIES="php-zip php-curl php-gd"
+#=================================================
+# COMMON VARIABLES
+#=================================================
 
+# dependencies used by the app
+pkg_dependencies="php-zip php-curl php-gd"
+
+#=================================================
+# PERSONAL HELPERS
+#=================================================
 # Check if directory/file already exists (path in argument)
 myynh_check_path () {
-	[ -z "$1" ] && ynh_die "No argument supplied"
-	[ ! -e "$1" ] || ynh_die "$1 already exists"
+	[ -z "$1" ] && ynh_die --message="No argument supplied"
+	[ ! -e "$1" ] || ynh_die --message="$1 already exists"
 }
 
 # Create directory only if not already exists (path in argument)
 myynh_create_dir () {
-	[ -z "$1" ] && ynh_die "No argument supplied"
+	[ -z "$1" ] && ynh_die --message="No argument supplied"
 	[ -d "$1" ] || mkdir -p "$1"
 }
 
@@ -25,14 +30,14 @@ myynh_check_disk_space () {
 	if [ $free_space -le $backup_size ]; then
 		WARNING echo "Not enough backup disk space for: $1"
 		WARNING echo "Space available: $(HUMAN_SIZE $free_space)"
-		ynh_die "Space needed: $(HUMAN_SIZE $backup_size)"
+		ynh_die --message="Space needed: $(HUMAN_SIZE $backup_size)"
 	fi
 }
 
 # Clean & copy files needed to final folder
 myynh_clean_source () {
-	find "$TMPDIR" -type f -name ".htaccess" | xargs rm
-	[ -e "$TMPDIR/.gitignore" ] && rm -r "$TMPDIR/.gitignore"
+	find "$tmpdir" -type f -name ".htaccess" | xargs rm
+	[ -e "$tmpdir/.gitignore" ] && rm -r "$tmpdir/.gitignore"
 }
 
 myynh_set_permissions () {
@@ -47,7 +52,7 @@ myynh_set_permissions () {
 }
 
 #Convert --data to --data-urlencode before ynh_local_curl
-urlencode() {
+myynh_urlencode() {
 	local data
 	if [[ $# != 1 ]]; then
 		echo "Usage: $0 string-to-urlencode"
@@ -61,3 +66,11 @@ urlencode() {
 	echo "${data##/?}"
 	return 0
 }
+
+#=================================================
+# EXPERIMENTAL HELPERS
+#=================================================
+
+#=================================================
+# FUTURE OFFICIAL HELPERS
+#=================================================

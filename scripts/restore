@@ -4,49 +4,78 @@
 # yunohost app remove bozon
 # yunohost backup restore "bozon-test"
 
-set -eu
-if [ ! -e _common.sh ]; then
-	# Fetch helpers file if not in current directory
-	cp ../settings/scripts/_common.sh ./_common.sh
-	chmod a+rx _common.sh
-fi
-source _common.sh
+#=================================================
+# GENERIC START
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
+#Keep this path for calling _common.sh inside the execution's context of backup and restore scripts
+source ../settings/scripts/_common.sh
 source /usr/share/yunohost/helpers
 
-# manage script failure
+#=================================================
+# MANAGE SCRIPT FAILURE
+#=================================================
+# Exit if an error occurs during the execution of the script
 ynh_abort_if_errors
 
-# retrieve arguments
+#=================================================
+# LOAD SETTINGS
+#=================================================
+ynh_script_progression --message="Loading installation settings..." --time --weight=1
 app=$YNH_APP_INSTANCE_NAME
-domain=$(ynh_app_setting_get "$app" domain)
-path_url=$(ynh_app_setting_get "$app" path)
-backup_core_only=$(ynh_app_setting_get "$app" backup_core_only)
+domain=$(ynh_app_setting_get --app="$app" --key=domain)
+path_url=$(ynh_app_setting_get --app="$app" --key=path)
+backup_core_only=$(ynh_app_setting_get --app="$app" --key=backup_core_only)
+final_path=$(ynh_app_setting_get --app="$app" --key=final_path)
+data_path=$(ynh_app_setting_get --app="$app" --key=data_path)
 
-# definie useful vars
-final_path="/var/www/$app"
-data_path="/home/yunohost.app/$app"
+#=================================================
+# CHECK IF THE APP CAN BE RESTORED
+#=================================================
+ynh_script_progression --message="Validating restoration parameters..." --time --weight=1
+ynh_webpath_available --domain="$domain" --path_url="$path_url" || ynh_die --message="Path not available: ${domain}${path_url}"
+test ! -d $final_path || ynh_die --message="There is already a directory: $final_path"
 
-# check domain/path availability
-ynh_webpath_available "$domain" "$path_url"
-myynh_check_path "$final_path"
+#=================================================
+# STANDARD RESTORATION STEPS
+#=================================================
+# RESTORE THE NGINX CONFIGURATION
+#=================================================
+ynh_restore_file --origin_path="/etc/nginx/conf.d/$domain.d/$app.conf"
 
-# add required packages
-ynh_install_app_dependencies "$PKG_DEPENDENCIES"
+#=================================================
+# RESTORE THE APP MAIN DIR
+#=================================================
+ynh_script_progression --message="Restoring the app main directory..." --time --weight=1
+ynh_restore_file --origin_path="$final_path"
 
-# create a dedicated system user
-ynh_system_user_create "$app"
+#=================================================
+# RECREATE THE DEDICATED USER
+#=================================================
+ynh_script_progression --message="Recreating the dedicated system user..." --time --weight=1
+ynh_system_user_create --username="$app"
 
-# restore sconf files
-ynh_restore_file "/etc/nginx/conf.d/$domain.d/$app.conf"
-ynh_restore_file "/etc/php5/fpm/pool.d/$app.conf"
+#=================================================
+# RESTORE THE PHP-FPM CONFIGURATION
+#=================================================
+ynh_restore_file --origin_path="/etc/php/7.0/fpm/pool.d/$app.conf"
 
-# restore source
-ynh_restore_file "$final_path"
+#=================================================
+# SPECIFIC RESTORATION
+#=================================================
+# REINSTALL DEPENDENCIES
+#=================================================
+ynh_script_progression --message="Reinstalling dependencies..." --time --weight=1
+ynh_install_app_dependencies $pkg_dependencies
 
-# restore data only if there is no data
+#=================================================
+# RESTORE THE DATA DIR
+#=================================================
+ynh_script_progression --message="Restoring the data directory..." --time --weight=2
 if [ ! -d "$data_path" ]; then
 	if [ $backup_core_only -eq 0 ]; then
-		ynh_restore_file "$data_path"
+		ynh_restore_file --origin_path="$data_path"
 	else
 		myynh_create_dir "$data_path/uploads"
 		myynh_create_dir "$data_path/thumbs"
@@ -55,9 +84,22 @@ else
 	echo "$data_path already exists and will not be overwritten" >&2
 fi
 
-# set permissions
+#=================================================
+# RESTORE USER RIGHTS
+#=================================================
 myynh_set_permissions
 
-# restart services
-systemctl reload php5-fpm
-systemctl reload nginx
+#=================================================
+# GENERIC FINALIZATION
+#=================================================
+# RELOAD NGINX AND PHP-FPM
+#=================================================
+ynh_script_progression --message="Reloading nginx web server and php-fpm..." --time --weight=1
+ynh_systemd_action --service_name=php7.0-fpm --action=reload
+ynh_systemd_action --service_name=nginx --action=reload
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+ynh_script_progression --message="Restoration completed for $app" --time --last
+
