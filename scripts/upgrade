@@ -68,9 +68,9 @@ if [ "$upgrade_type" == "UPGRADE_APP" ]; then
 	ynh_setup_source --dest_dir="$tmpdir"
 	## clean & copy files needed to final folder
 	myynh_clean_source
-	[ -e "$tmpdir/config.php" ] && rm "$tmpdir/config.php"
+	[ -e "$tmpdir/config.php" ] && ynh_secure_remove "$tmpdir/config.php"
 	cp -a "$tmpdir/." "$final_path"
-	rm -R "$tmpdir"
+	ynh_secure_remove "$tmpdir"
 	## set permissions
 	myynh_set_permissions
 fi
