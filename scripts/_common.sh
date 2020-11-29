@@ -22,22 +22,10 @@ myynh_create_dir () {
 	[ -d "$1" ] || mkdir -p "$1"
 }
 
-# Check if enough disk space available on backup storage
-myynh_check_disk_space () {
-	file_to_analyse=$1
-	backup_size=$(du --summarize "$1" | cut -f1)
-	free_space=$(df --output=avail "/home/yunohost.backup" | sed 1d)
-	if [ $free_space -le $backup_size ]; then
-		WARNING echo "Not enough backup disk space for: $1"
-		WARNING echo "Space available: $(HUMAN_SIZE $free_space)"
-		ynh_die --message="Space needed: $(HUMAN_SIZE $backup_size)"
-	fi
-}
-
 # Clean & copy files needed to final folder
 myynh_clean_source () {
 	find "$tmpdir" -type f -name ".htaccess" | xargs rm
-	[ -e "$tmpdir/.gitignore" ] && rm -r "$tmpdir/.gitignore"
+	[ -e "$tmpdir/.gitignore" ] && ynh_secure_remove "$tmpdir/.gitignore"
 }
 
 myynh_set_permissions () {
