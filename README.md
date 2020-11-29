@@ -13,7 +13,7 @@ BoZoN is a minimalist Drag & drop file sharing app.
 
 ## Screenshots
 
-![](Link to a screenshot of this app.)
+![](sources/bozon_screenshot.png)
 
 ## Configuration
 
@@ -47,7 +47,6 @@ How to configure this app: From an admin panel, a plain file with SSH, or any ot
 ## Links
 
  * Report a bug: https://github.com/YunoHost-Apps/bozon_ynh/issues
- * App website: http://bozon.pw
  * Upstream app repository: https://github.com/broncowdd/BoZoN
  * YunoHost website: https://yunohost.org/
 
@@ -63,4 +62,3 @@ sudo yunohost app install https://github.com/YunoHost-Apps/bozon_ynh/tree/testin
 or
 sudo yunohost app upgrade bozon -u https://github.com/YunoHost-Apps/bozon_ynh/tree/testing --debug
 ```
-
