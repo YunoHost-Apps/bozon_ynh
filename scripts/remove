@@ -32,16 +32,6 @@ ynh_remove_app_dependencies
 #=================================================
 ynh_script_progression --message="Removing app main directory..." --weight=1
 ynh_secure_remove --file="$final_path"
-#=================================================
-# REMOVE DATA DIR
-#=================================================
-
-# Remove the data directory if --purge option is used
-if [ "${YNH_APP_PURGE:-0}" -eq 1 ]
-then
-	ynh_script_progression --message="Removing app data directory..." --time --weight=1
-	ynh_secure_remove --file="$data_path"
-fi
 
 #=================================================
 # REMOVE NGINX CONFIGURATION
@@ -58,7 +48,14 @@ ynh_remove_fpm_config
 #=================================================
 # SPECIFIC REMOVE
 #=================================================
-ynh_secure_remove --file="$data_path"
+
+# Remove the data directory if --purge option is used
+if [ "${REMOVE_CORE_ONLY:-0}" -eq 0 ]
+then
+	ynh_script_progression --message="Removing app data directory..." --weight=1
+	ynh_secure_remove --file="$data_path"
+fi
+
 
 #=================================================
 # GENERIC FINALIZATION
