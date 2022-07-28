@@ -83,10 +83,6 @@ ynh_setup_source --dest_dir="$tmpdir"
 myynh_clean_source
 mv "$tmpdir" "$final_path"
 
-chmod 750 "$final_path"
-chmod -R o-rwx "$final_path"
-chown -R $app:www-data "$final_path"
-
 #=================================================
 # PHP-FPM CONFIGURATION
 #=================================================
@@ -116,10 +112,6 @@ datadir=/home/yunohost.app/$app
 ynh_app_setting_set --app=$app --key=datadir --value=$datadir
 
 mkdir -p $datadir
-
-chmod 750 "$datadir"
-chmod -R o-rwx "$datadir"
-chown -R $app:www-data "$datadir"
 
 #=================================================
 # ADD A CONFIGURATION

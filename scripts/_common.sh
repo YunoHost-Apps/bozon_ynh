@@ -34,12 +34,10 @@ myynh_set_permissions () {
 	[ $(find "$final_path" -type d | wc -l) -gt 0 ] && find "$final_path" -type d | xargs chmod 0755
 	[ $(find "$datadir" -type f | wc -l) -gt 0 ] && find "$datadir" -type f | xargs chmod 0644
 	[ $(find "$datadir" -type d | wc -l) -gt 0 ] && find "$datadir" -type d | xargs chmod 0755
-	chown -R root:"$app" "$final_path"
-	chown -R "$app": "$final_path/private"
-	chown -R "$app": "$datadir"
-	chown root: "$datadir"
 	chmod -R o-rwx "$final_path"
+	chown -R $app:www-data "$final_path"
 	chmod -R o-rwx "$datadir"
+	chown -R $app:www-data "$datadir"
 }
 
 #Convert --data to --data-urlencode before ynh_local_curl
