@@ -38,6 +38,8 @@ myynh_set_permissions () {
 	chown -R "$app": "$final_path/private"
 	chown -R "$app": "$datadir"
 	chown root: "$datadir"
+	chmod -R o-rwx "$final_path"
+	chmod -R o-rwx "$datadir"
 }
 
 #Convert --data to --data-urlencode before ynh_local_curl
