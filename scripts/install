@@ -48,7 +48,6 @@ ynh_user_exists --username="$admin"
 ynh_script_progression --message="Storing installation settings..."
 ynh_app_setting_set --app="$app" --key=domain --value="$domain"
 ynh_app_setting_set --app="$app" --key=path --value="$path_url"
-ynh_app_setting_set --app="$app" --key=is_public --value=$is_public
 ynh_app_setting_set --app="$app" --key=admin_user --value="$admin"
 ynh_app_setting_set --app="$app" --key=backup_core_only --value=$backup_core_only
 ynh_app_setting_set --app="$app" --key=final_path --value="$final_path"
@@ -108,7 +107,7 @@ ynh_add_fpm_config
 # create admin user in bozon
 ynh_script_progression --message="Configuring admin user in BoZon..." --weight=2
 ## set the app as temporarily public for curl call
-ynh_app_setting_set --app="$app" --key=unprotected_uris --value="/"
+
 ## reload SSOwat config
 yunohost app ssowatconf
 ## reload Nginx
@@ -132,7 +131,7 @@ if [ $is_public -eq 0 ]; then
 	domainluaregex=$(echo "$domain" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
 	pathluaregex=$([ "$path_url" == "/" ] || echo "$path_url" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
 	regexList="${domainluaregex}${pathluaregex}/index%.php$","${domainluaregex}${pathluaregex}/index%.php%?p=.*$"
-	ynh_app_setting_set --app="$app" --key=protected_regex --value="$regexList"
+
 fi
 
 #=================================================
