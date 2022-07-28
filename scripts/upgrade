@@ -1,11 +1,11 @@
 #!/bin/bash
 
 #=================================================
-# GENERIC STARTING
+# GENERIC START
 #=================================================
 # IMPORT GENERIC HELPERS
 #=================================================
-set -eu
+
 source _common.sh
 source /usr/share/yunohost/helpers
 
@@ -13,29 +13,15 @@ source /usr/share/yunohost/helpers
 # LOAD SETTINGS
 #=================================================
 ynh_script_progression --message="Loading installation settings..."
-app=$YNH_APP_INSTANCE_NAME
-domain=$(ynh_app_setting_get --app="$app" --key=domain)
-path_url=$(ynh_app_setting_get --app="$app" --key=path)
-is_public=$(ynh_app_setting_get --app="$app" --key=is_public)
-admin_user=$(ynh_app_setting_get --app="$app" --key=admin_user)
-backup_core_only=$(ynh_app_setting_get --app="$app" --key=backup_core_only)
-final_path=$(ynh_app_setting_get --app="$app" --key=final_path)
-data_path=$(ynh_app_setting_get --app="$app" --key=data_path)
 
-#=================================================
-# ENSURE DOWNWARD COMPATIBILITY
-#=================================================
-ynh_script_progression --message="Ensuring downward compatibility..." --weight=1
-# If final_path doesn't exist, create it
-if [ -z "$final_path" ]; then
-	final_path="/var/www/$app"
-	ynh_app_setting_set --app="$app" --key=final_path --value="$final_path"
-fi
-# If data_path doesn't exist, create it
-if [ -z "$data_path" ]; then
-	data_path="/home/yunohost.app/$app"
-	ynh_app_setting_set --app="$app" --key=data_path --value="$data_path"
-fi
+app=$YNH_APP_INSTANCE_NAME
+
+domain=$(ynh_app_setting_get --app=$app --key=domain)
+path_url=$(ynh_app_setting_get --app=$app --key=path)
+is_public=$(ynh_app_setting_get --app=$app --key=is_public)
+admin_user=$(ynh_app_setting_get --app=$app --key=admin_user)
+final_path=$(ynh_app_setting_get --app=$app --key=final_path)
+datadir=$(ynh_app_setting_get --app=$app --key=datadir)
 
 #=================================================
 # CHECK VERSION
@@ -46,31 +32,56 @@ upgrade_type=$(ynh_check_app_version_changed)
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
 #=================================================
 ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --weight=3
-if [ -f "/etc/yunohost/apps/$app/scripts/backup" ]; then
-	ynh_backup_before_upgrade # Backup the current version of the app
-	ynh_clean_setup () {
-		ynh_restore_upgradebackup
-	}
-fi
+
+# Backup the current version of the app
+ynh_backup_before_upgrade
+ynh_clean_setup () {
+	ynh_clean_check_starting
+	# Restore it if the upgrade fails
+	ynh_restore_upgradebackup
+}
 # Exit if an error occurs during the execution of the script
 ynh_abort_if_errors
 
 #=================================================
-# Migrate legacy permissions to new system
+# STANDARD UPGRADE STEPS
 #=================================================
-if ynh_legacy_permissions_exists
-then
+# ENSURE DOWNWARD COMPATIBILITY
+#=================================================
+ynh_script_progression --message="Ensuring downward compatibility..." --weight=1
+
+# Cleaning legacy permissions
+if ynh_legacy_permissions_exists; then
 	ynh_legacy_permissions_delete_all
 
 	ynh_app_setting_delete --app=$app --key=is_public
 fi
 
+# If final_path doesn't exist, create it
+if [ -z "$final_path" ]; then
+	final_path="/var/www/$app"
+	ynh_app_setting_set --app="$app" --key=final_path --value="$final_path"
+fi
+# If datadir doesn't exist, create it
+if [ -z "$datadir" ]; then
+	datadir="/home/yunohost.app/$app"
+	ynh_app_setting_set --app="$app" --key=datadir --value="$datadir"
+fi
+
 #=================================================
-# STANDARD UPGRADE STEPS
+# CREATE DEDICATED USER
+#=================================================
+ynh_script_progression --message="Making sure dedicated system user exists..."
+
+# Create a dedicated user (if not existing)
+ynh_system_user_create --username=$app --home_dir="$final_path"
+
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
-if [ "$upgrade_type" == "UPGRADE_APP" ]; then	
+
+if [ "$upgrade_type" == "UPGRADE_APP" ]
+then
 	# download & unpack bozon
 	ynh_script_progression --message="Setting up source files..." --weight=2
 	## download source
@@ -81,55 +92,43 @@ if [ "$upgrade_type" == "UPGRADE_APP" ]; then
 	[ -e "$tmpdir/config.php" ] && ynh_secure_remove "$tmpdir/config.php"
 	cp -a "$tmpdir/." "$final_path"
 	ynh_secure_remove "$tmpdir"
-	## set permissions
-	myynh_set_permissions
 fi
+
+## set permissions
+myynh_set_permissions
+
+#=================================================
+# UPGRADE DEPENDENCIES
+#=================================================
+ynh_script_progression --message="Upgrading dependencies..." --weight=1
+
+ynh_install_app_dependencies $pkg_dependencies
+
+#=================================================
+# PHP-FPM CONFIGURATION
+#=================================================
+ynh_script_progression --message="Upgrading PHP-FPM configuration..."
+
+# Create a dedicated PHP-FPM config
+ynh_add_fpm_config
 
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
 ynh_script_progression --message="Upgrading nginx web server configuration..."
+
 if [ "$path_url" != "/" ]; then
 	ynh_replace_string --match_string="^#sub_path_only" --replace_string="" --target_file="../conf/nginx.conf"
 fi
 ynh_add_nginx_config
 
 #=================================================
-# UPGRADE DEPENDENCIES
-#=================================================
-ynh_script_progression --message="Upgrading dependencies..." --weight=1
-ynh_install_app_dependencies $pkg_dependencies
-
-#=================================================
-# CREATE DEDICATED USER
-#=================================================
-ynh_script_progression --message="Making sure dedicated system user exists..."
-ynh_system_user_create --username="$app"
-
-#=================================================
-# PHP-FPM CONFIGURATION
-#=================================================
-ynh_script_progression --message="Upgrading php-fpm configuration..."
-ynh_add_fpm_config
-
-#=================================================
-# SETUP SSOWAT
-#=================================================
-ynh_script_progression --message="Upgrading SSOwat configuration..."
-if [ $is_public -eq 0 ]; then
-	# escape magic chars in vars (lua magic chars are ().%+-*?[^$ according to https://www.lua.org/pil/20.2.html)
-	domainluaregex=$(echo "$domain" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
-	pathluaregex=$([ "$path_url" == "/" ] || echo "$path_url" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
-	regexList="${domainluaregex}${pathluaregex}/index%.php$","${domainluaregex}${pathluaregex}/index%.php%?p=.*$"
-	ynh_app_setting_set --app="$app" --key=protected_regex --value="$regexList"
-else
-	ynh_app_setting_set --app="$app" --key=unprotected_uris --value="/"
-fi
-
+# SPECIFIC UPGRADE
 #=================================================
 # CLEAN PHP SESSIONS STORED IN /var/lib/phpx/sessions
 #=================================================
 ynh_script_progression --message="Cleaning php sessions stored..."
+
 if [ -d "/usr/lib/php5" ]; then
 	[ -x /usr/lib/php5/sessionclean ] && /usr/lib/php5/sessionclean
 elif [ -d "/usr/lib/php" ]; then
@@ -137,12 +136,16 @@ elif [ -d "/usr/lib/php" ]; then
 fi
 
 #=================================================
+# GENERIC FINALIZATION
+#=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading nginx web server..."
+ynh_script_progression --message="Reloading NGINX web server..."
+
 ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================
 # END OF SCRIPT
 #=================================================
+
 ynh_script_progression --message="Upgrade of $app completed" --last

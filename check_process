@@ -1,20 +1,17 @@
 ;; Test complet (bozon=sans bdd)
 	auto_remove=1
 	; Manifest
-		domain="domain.tld"	(DOMAIN)
-		path="/path"	(PATH)
+		domain="domain.tld"
+		path="/path"
 		is_public=1
-		language="fr"
-		filesize="2G"
-		admin="john"	(USER)
-		password="super_secret_password"	(PASSWORD)
-		backup_core_only=1
+		admin="john"
+		password="super_secret_password"
 	; Checks
 		pkg_linter=1
 		setup_sub_dir=1
 		setup_root=1
 		setup_nourl=0
-		setup_private=0
+		setup_private=1
 		setup_public=1
 		upgrade=1
 		upgrade=1	from_commit=03e787291ba1104f195fdeb5103071b9546b4ad5

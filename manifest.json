@@ -6,77 +6,49 @@
         "en": "Minimalist Drag & drop file sharing app",
         "fr": "Application minimaliste de partage de fichiers"
     },
-    "url": "https://github.com/broncowdd/BoZoN",
-    "license": "AGPL-3.0",
     "version": "2.4.18~ynh1",
+    "url": "https://github.com/broncowdd/BoZoN",
+    "upstream": {
+        "license": "AGPL-3.0",
+        "code": "https://github.com/broncowdd/BoZoN"
+    },
+    "license": "AGPL-3.0",
     "maintainer": {
         "name": "ewilly",
         "email": "ewilly@neuf.fr"
     },
     "requirements": {
-        "yunohost": ">= 3.8.1"
+        "yunohost": ">= 4.3.0"
     },
     "multi_instance": false,
     "services": [
         "nginx",
-        "php7.0-fpm"
+        "php7.3-fpm"
     ],
     "arguments": {
-        "install" : [
+        "install": [
             {
                 "name": "domain",
-                "type": "domain",
-                "ask": {
-                    "en": "Choose a domain for BoZoN",
-                    "fr": "Choisissez un domaine pour BoZoN"
-                },
-                "example": "domain.org"
+                "type": "domain"
             },
             {
                 "name": "path",
                 "type": "path",
-                "ask": {
-                    "en": "Choose a path for BoZoN",
-                    "fr": "Choisissez un chemin pour BoZoN"
-                },
                 "example": "/bozon",
                 "default": "/bozon"
             },
             {
                 "name": "is_public",
                 "type": "boolean",
-                "ask": {
-                    "en": "Should this application be public? (if not, sharing file with unregistered users will still work)",
-                    "fr": "Est-ce que cette application doit être visible publiquement ? (dans le cas contraire, le partage de fichiers avec des utilisateurs externes fonctionnera tout de même)"
-                },
                 "default": false
             },
             {
                 "name": "admin",
-                "type": "user",
-                "ask": {
-                    "en": "Choose an admin user for BoZoN",
-                    "fr": "Choisissez un administrateur pour BoZoN"
-                },
-                "example": "homer"
+                "type": "user"
             },
             {
                 "name": "password",
-                "type": "password",
-                "ask": {
-                    "en": "Choose an admin password for BoZoN",
-                    "fr": "Choisissez un mot de passe administrateur pour BoZoN"
-                },
-                "example": "super_secret_password"
-            },
-            {
-                "name": "backup_core_only",
-                "type": "boolean",
-                "ask": {
-                    "en": "When backing up, should only the core of the app be backed up? (uploaded files to BoZoN such as videos, pictures, documents, etc. will not be backed up)",
-                    "fr": "En cas de sauvegarde, doit-être uniquement sauvegardé le cœur de l'application ? (les fichiers transférés dans BoZoN tels que les vidéos, images, documents, etc. ne seront pas sauvegardés)"
-                },
-                "default": true
+                "type": "password"
             }
         ]
     }
