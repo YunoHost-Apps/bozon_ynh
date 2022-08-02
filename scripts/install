@@ -157,6 +157,7 @@ if [ $is_public -eq 0 ]; then
 	domainluaregex=$(echo "$domain" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
 	pathluaregex=$([ "$path_url" == "/" ] || echo "$path_url" | sed -e 's/[]().%+*?[^$[]/\%&/g' | sed -e 's/\-/\%&/g')
 	regexList="${domainluaregex}${pathluaregex}/index%.php$","${domainluaregex}${pathluaregex}/index%.php%?p=.*$"
+	ynh_app_setting_set --app="$app" --key=protected_regex --value="$regexList"
 fi
 
 #=================================================
