@@ -12,6 +12,10 @@ source /usr/share/yunohost/helpers
 #=================================================
 # MANAGE SCRIPT FAILURE
 #=================================================
+
+ynh_clean_setup () {
+	true
+}
 # Exit if an error occurs during the execution of the script
 ynh_abort_if_errors
 
@@ -30,7 +34,7 @@ app=$YNH_APP_INSTANCE_NAME
 #=================================================
 # CHECK IF THE APP CAN BE INSTALLED WITH THESE ARGS
 #=================================================
-ynh_script_progression --message="Validating installation parameters..."
+ynh_script_progression --message="Validating installation parameters..." --weight=1
 
 final_path=/var/www/$app
 datadir="/home/yunohost.app/$app"
@@ -46,7 +50,7 @@ ynh_user_exists --username="$admin"
 #=================================================
 # STORE SETTINGS FROM MANIFEST
 #=================================================
-ynh_script_progression --message="Storing installation settings..."
+ynh_script_progression --message="Storing installation settings..." --weight=1
 
 ynh_app_setting_set --app=$app --key=domain --value=$domain
 ynh_app_setting_set --app=$app --key=path --value=$path_url
@@ -66,7 +70,7 @@ ynh_install_app_dependencies $pkg_dependencies
 #=================================================
 # CREATE DEDICATED USER
 #=================================================
-ynh_script_progression --message="Configuring system user..."
+ynh_script_progression --message="Configuring system user..." --weight=1
 
 # Create a system user
 ynh_system_user_create --username=$app --home_dir="$final_path"
@@ -86,7 +90,7 @@ mv "$tmpdir" "$final_path"
 #=================================================
 # PHP-FPM CONFIGURATION
 #=================================================
-ynh_script_progression --message="Configuring PHP-FPM..."
+ynh_script_progression --message="Configuring PHP-FPM..." --weight=1
 
 # Create a dedicated PHP-FPM config
 ynh_add_fpm_config
@@ -94,7 +98,7 @@ ynh_add_fpm_config
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Configuring NGINX web server..."
+ynh_script_progression --message="Configuring NGINX web server..." --weight=1
 
 if [ "$path_url" != "/" ]; then
 	ynh_replace_string --match_string="^#sub_path_only" --replace_string="" --target_file="../conf/nginx.conf"
@@ -106,7 +110,7 @@ ynh_add_nginx_config
 #=================================================
 # CREATE DATA DIRECTORY
 #=================================================
-ynh_script_progression --message="Creating a data directory..."
+ynh_script_progression --message="Creating a data directory..." --weight=1
 
 datadir=/home/yunohost.app/$app
 ynh_app_setting_set --app=$app --key=datadir --value=$datadir
@@ -116,7 +120,7 @@ mkdir -p $datadir
 #=================================================
 # ADD A CONFIGURATION
 #=================================================
-ynh_script_progression --message="Adding a configuration file..."
+ynh_script_progression --message="Adding a configuration file..." --weight=1
 
 ## create private & data folders
 myynh_create_dir "$final_path/private"
@@ -140,17 +144,15 @@ ynh_permission_update --permission="main" --add="visitors"
 ## fill the superadmin creation form (helper ynh_local_curl doesn't work due to --data vs --data-urlencode ?)
 admin_url="/index.php?p=login"
 admin=$(myynh_urlencode $admin)
-ynh_print_OFF
-	password=$(myynh_urlencode $password)
-	ynh_local_curl $admin_url "creation=1" "login=$admin" "pass=$password" "confirm=$password"
-ynh_print_ON
+password=$(myynh_urlencode $password)
+ynh_local_curl $admin_url "creation=1" "login=$admin" "pass=$password" "confirm=$password"
 
 #=================================================
 # GENERIC FINALIZATION
 #=================================================
 # SETUP SSOWAT
 #=================================================
-ynh_script_progression --message="Configuring SSOwat..."
+ynh_script_progression --message="Configuring SSOwat..." --weight=1
 
 if [ $is_public -eq 0 ]; then
 	# escape magic chars in vars (lua magic chars are ().%+-*?[^$ according to https://www.lua.org/pil/20.2.html)
@@ -163,7 +165,7 @@ fi
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading NGINX web server..."
+ynh_script_progression --message="Reloading NGINX web server..." --weight=1
 
 ynh_systemd_action --service_name=nginx --action=reload
 
