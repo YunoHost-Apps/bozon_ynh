@@ -18,7 +18,8 @@ If you don't have YunoHost, please consult [the guide](https://yunohost.org/#/in
 BoZoN is a minimalist Drag & drop file sharing app.
 
 
-**Shipped version:** 2.4.18~ynh2
+**Shipped version:** 2.4.18~ynh3
+
 
 ## Screenshots
 
