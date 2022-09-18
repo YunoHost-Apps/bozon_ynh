@@ -4,8 +4,10 @@
 # COMMON VARIABLES
 #=================================================
 
-# dependencies used by the app
-pkg_dependencies="php$YNH_DEFAULT_PHP_VERSION-zip php$YNH_DEFAULT_PHP_VERSION-curl php$YNH_DEFAULT_PHP_VERSION-gd"
+php_dependencies="php$YNH_DEFAULT_PHP_VERSION-zip php$YNH_DEFAULT_PHP_VERSION-curl php$YNH_DEFAULT_PHP_VERSION-gd"
+
+# dependencies used by the app (must be on a single line)
+pkg_dependencies="$php_dependencies"
 
 #=================================================
 # PERSONAL HELPERS
