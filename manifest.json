@@ -6,7 +6,7 @@
         "en": "Minimalist Drag & drop file sharing app",
         "fr": "Application minimaliste de partage de fichiers"
     },
-    "version": "2.4.18~ynh3",
+    "version": "2.4.18~ynh4",
     "url": "https://github.com/broncowdd/BoZoN",
     "upstream": {
         "license": "AGPL-3.0",
@@ -23,7 +23,7 @@
     "multi_instance": false,
     "services": [
         "nginx",
-        "php7.3-fpm"
+        "php7.4-fpm"
     ],
     "arguments": {
         "install": [
