@@ -5,7 +5,8 @@ It shall NOT be edited by hand.
 
 # BoZoN for YunoHost
 
-[![Integration level](https://dash.yunohost.org/integration/bozon.svg)](https://dash.yunohost.org/appci/app/bozon) ![Working status](https://ci-apps.yunohost.org/ci/badges/bozon.status.svg) ![Maintenance status](https://ci-apps.yunohost.org/ci/badges/bozon.maintain.svg)  
+[![Integration level](https://dash.yunohost.org/integration/bozon.svg)](https://dash.yunohost.org/appci/app/bozon) ![Working status](https://ci-apps.yunohost.org/ci/badges/bozon.status.svg) ![Maintenance status](https://ci-apps.yunohost.org/ci/badges/bozon.maintain.svg)
+
 [![Install BoZoN with YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=bozon)
 
 *[Lire ce readme en français.](./README_fr.md)*
@@ -20,10 +21,13 @@ BoZoN is a minimalist Drag & drop file sharing app.
 
 **Shipped version:** 2.4.18~ynh3
 
-
 ## Screenshots
 
 ![Screenshot of BoZoN](./doc/screenshots/bozon_screenshot.png)
+
+## :red_circle: Antifeatures
+
+- **Upstream not maintained**: This software is not maintained anymore. Expect it to break down over time, be exposed to unfixed security breaches, etc.
 
 ## Documentation and resources
 
