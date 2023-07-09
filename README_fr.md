@@ -5,29 +5,33 @@ It shall NOT be edited by hand.
 
 # BoZoN pour YunoHost
 
-[![Niveau d'intégration](https://dash.yunohost.org/integration/bozon.svg)](https://dash.yunohost.org/appci/app/bozon) ![Statut du fonctionnement](https://ci-apps.yunohost.org/ci/badges/bozon.status.svg) ![Statut de maintenance](https://ci-apps.yunohost.org/ci/badges/bozon.maintain.svg)  
+[![Niveau d’intégration](https://dash.yunohost.org/integration/bozon.svg)](https://dash.yunohost.org/appci/app/bozon) ![Statut du fonctionnement](https://ci-apps.yunohost.org/ci/badges/bozon.status.svg) ![Statut de maintenance](https://ci-apps.yunohost.org/ci/badges/bozon.maintain.svg)
+
 [![Installer BoZoN avec YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=bozon)
 
 *[Read this readme in english.](./README.md)*
 
-> *Ce package vous permet d'installer BoZoN rapidement et simplement sur un serveur YunoHost.
-Si vous n'avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour savoir comment l'installer et en profiter.*
+> *Ce package vous permet d’installer BoZoN rapidement et simplement sur un serveur YunoHost.
+Si vous n’avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour savoir comment l’installer et en profiter.*
 
-## Vue d'ensemble
+## Vue d’ensemble
 
 BoZoN is a minimalist Drag & drop file sharing app.
 
 
-**Version incluse :** 2.4.18~ynh3
+**Version incluse :** 2.4.18~ynh3
 
+## Captures d’écran
 
-## Captures d'écran
+![Capture d’écran de BoZoN](./doc/screenshots/bozon_screenshot.png)
 
-![Capture d'écran de BoZoN](./doc/screenshots/bozon_screenshot.png)
+## :red_circle: Fonctions indésirables
+
+- **Upstream not maintained**: This software is not maintained anymore. Expect it to break down over time, be exposed to unfixed security breaches, etc.
 
 ## Documentations et ressources
 
-* Dépôt de code officiel de l'app : <https://github.com/broncowdd/BoZoN>
+* Dépôt de code officiel de l’app : <https://github.com/broncowdd/BoZoN>
 * Documentation YunoHost pour cette app : <https://yunohost.org/app_bozon>
 * Signaler un bug : <https://github.com/YunoHost-Apps/bozon_ynh/issues>
 
@@ -43,4 +47,4 @@ ou
 sudo yunohost app upgrade bozon -u https://github.com/YunoHost-Apps/bozon_ynh/tree/testing --debug
 ```
 
-**Plus d'infos sur le packaging d'applications :** <https://yunohost.org/packaging_apps>
+**Plus d’infos sur le packaging d’applications :** <https://yunohost.org/packaging_apps>
