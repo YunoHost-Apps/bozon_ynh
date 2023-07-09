@@ -4,10 +4,10 @@
 # COMMON VARIABLES
 #=================================================
 
-php_dependencies="php$YNH_DEFAULT_PHP_VERSION-zip php$YNH_DEFAULT_PHP_VERSION-curl php$YNH_DEFAULT_PHP_VERSION-gd"
+#REMOVEME? php_dependencies="php$YNH_DEFAULT_PHP_VERSION-zip php$YNH_DEFAULT_PHP_VERSION-curl php$YNH_DEFAULT_PHP_VERSION-gd"
 
 # dependencies used by the app (must be on a single line)
-pkg_dependencies="$php_dependencies"
+#REMOVEME? pkg_dependencies="$php_dependencies"
 
 #=================================================
 # PERSONAL HELPERS
@@ -32,14 +32,14 @@ myynh_clean_source () {
 }
 
 myynh_set_permissions () {
-	[ $(find "$final_path" -type f | wc -l) -gt 0 ] && find "$final_path" -type f | xargs chmod 0644
-	[ $(find "$final_path" -type d | wc -l) -gt 0 ] && find "$final_path" -type d | xargs chmod 0755
-	[ $(find "$datadir" -type f | wc -l) -gt 0 ] && find "$datadir" -type f | xargs chmod 0644
-	[ $(find "$datadir" -type d | wc -l) -gt 0 ] && find "$datadir" -type d | xargs chmod 0755
-	chmod -R o-rwx "$final_path"
-	chown -R $app:www-data "$final_path"
-	chmod -R o-rwx "$datadir"
-	chown -R $app:www-data "$datadir"
+	[ $(find "$install_dir" -type f | wc -l) -gt 0 ] && find "$install_dir" -type f | xargs chmod 0644
+	[ $(find "$install_dir" -type d | wc -l) -gt 0 ] && find "$install_dir" -type d | xargs chmod 0755
+	[ $(find "$data_dir" -type f | wc -l) -gt 0 ] && find "$data_dir" -type f | xargs chmod 0644
+	[ $(find "$data_dir" -type d | wc -l) -gt 0 ] && find "$data_dir" -type d | xargs chmod 0755
+	chmod -R o-rwx "$install_dir"
+	chown -R $app:www-data "$install_dir"
+	chmod -R o-rwx "$data_dir"
+	chown -R $app:www-data "$data_dir"
 }
 
 #Convert --data to --data-urlencode before ynh_local_curl
