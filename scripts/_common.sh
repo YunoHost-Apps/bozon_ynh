@@ -12,7 +12,7 @@
 myynh_clean_source () {
     find "$install_dir" -type f -name ".htaccess" -delete
     if [ -e "$install_dir/.gitignore" ]; then
-        ynh_secure_remove "$install_dir/.gitignore"
+        ynh_secure_remove --file="$install_dir/.gitignore"
     fi
 }
 
