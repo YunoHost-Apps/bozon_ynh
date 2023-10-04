@@ -16,7 +16,7 @@ license = "AGPL-3.0"
 code = "https://github.com/broncowdd/BoZoN"
 
 [integration]
-yunohost = ">= 4.3.0"
+yunohost = ">= 11.2"
 architectures = "all"
 multi_instance = false
 ldap = true
