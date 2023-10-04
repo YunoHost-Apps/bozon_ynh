@@ -44,7 +44,9 @@ ynh_add_fpm_config
 ynh_script_progression --message="Configuring admin user in BoZon..." --weight=2
 
 ## fill the superadmin creation form (helper ynh_local_curl doesn't work due to --data vs --data-urlencode ?)
-ynh_local_curl "/index.php?p=login" "creation=1" "login=$admin" "pass=$password" "confirm=$password"
+admin_enc=$(myynh_urlencode "$admin")
+password_enc=$(myynh_urlencode "$password")
+ynh_local_curl "/index.php?p=login" "creation=1" "login=$admin_enc" "pass=$password_enc" "confirm=$password_enc"
 
 #=================================================
 # END OF SCRIPT
