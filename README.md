@@ -32,6 +32,7 @@ BoZoN is a minimalist Drag & drop file sharing app.
 ## Documentation and resources
 
 * Upstream app code repository: <https://github.com/broncowdd/BoZoN>
+* YunoHost Store: <https://apps.yunohost.org/app/bozon>
 * Report a bug: <https://github.com/YunoHost-Apps/bozon_ynh/issues>
 
 ## Developer info
