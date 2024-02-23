@@ -47,8 +47,8 @@ ram.runtime = "10M"
 
 [resources]
     [resources.sources.main]
-    url = "https://github.com/broncowdd/BoZoN/archive/ce0265e0dd13bc1e3cbbf0d96b846f65d1a17173.zip"
-    sha256 = "42e8e81771cb3489297a75138a69cf83c82edc3e6ea5988b8d436254ac502b1b"
+    url = "https://github.com/broncowdd/BoZoN/archive/ce0265e0dd13bc1e3cbbf0d96b846f65d1a17173.tar.gz"
+    sha256 = "32bd0ab3918feeffbd77141e03dda1424043a9927758e5ed3054df96c2bc8673"
     autoupdate.strategy = "latest_github_commit"
 
     [resources.system_user]
