@@ -25,7 +25,7 @@ BoZoN is a minimalist Drag & drop file sharing app.
 
 ![Captura de pantalla de BoZoN](./doc/screenshots/bozon_screenshot.png)
 
-## :red_circle: Caraterísticas cuestionables
+## :red_circle: Debes considerar
 
 - **Upstream not maintained**: This software is not maintained anymore. Expect it to break down over time, be exposed to unfixed security breaches, etc.
 

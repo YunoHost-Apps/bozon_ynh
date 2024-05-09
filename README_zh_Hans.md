@@ -3,7 +3,7 @@
 请勿手动编辑。
 -->
 
-# YunoHost 的 BoZoN
+# YunoHost 上的 BoZoN
 
 [![集成程度](https://dash.yunohost.org/integration/bozon.svg)](https://dash.yunohost.org/appci/app/bozon) ![工作状态](https://ci-apps.yunohost.org/ci/badges/bozon.status.svg) ![维护状态](https://ci-apps.yunohost.org/ci/badges/bozon.maintain.svg)
 
