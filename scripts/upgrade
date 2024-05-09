@@ -41,9 +41,7 @@ ynh_add_fpm_config
 #=================================================
 ynh_script_progression --message="Cleaning php sessions stored..." --weight=1
 
-if [ -d "/usr/lib/php5" ]; then
-	[ -x /usr/lib/php5/sessionclean ] && /usr/lib/php5/sessionclean
-elif [ -d "/usr/lib/php" ]; then
+if [ -d "/usr/lib/php" ]; then
 	[ -x /usr/lib/php/sessionclean ] && /usr/lib/php/sessionclean
 fi
 
